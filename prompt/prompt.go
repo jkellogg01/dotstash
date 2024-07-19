@@ -3,6 +3,7 @@ package prompt
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
@@ -10,15 +11,16 @@ import (
 )
 
 type Prompter struct {
-	scnr *bufio.Scanner
+	scanner *bufio.Scanner
+	writer  io.Writer
 }
 
-func NewPrompter(s *bufio.Scanner) *Prompter {
-	return &Prompter{s}
+func NewPrompter(s *bufio.Scanner, w io.Writer) *Prompter {
+	return &Prompter{s, w}
 }
 
 func NewDefaultPrompter() *Prompter {
-	return NewPrompter(bufio.NewScanner(os.Stdin))
+	return NewPrompter(bufio.NewScanner(os.Stdin), os.Stdout)
 }
 
 func (p *Prompter) TextPrompt(q, d string) string {
@@ -55,16 +57,16 @@ func (p *Prompter) BoolPrompt(q string, d bool) bool {
 }
 
 func (p *Prompter) prompt(q, d string) string {
-	fmt.Print(q)
+	fmt.Fprint(p.writer, q)
 	if d != "" {
-		fmt.Printf(" (%s)", d)
+		fmt.Fprintf(p.writer, " (%s)", d)
 	}
-	fmt.Print("\n> ")
-	if !p.scnr.Scan() {
-		if err := p.scnr.Err(); err != nil {
+	fmt.Fprint(p.writer, "\n> ")
+	if !p.scanner.Scan() {
+		if err := p.scanner.Err(); err != nil {
 			log.Error(err)
 		}
 		return ""
 	}
-	return p.scnr.Text()
+	return p.scanner.Text()
 }
