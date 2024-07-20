@@ -21,3 +21,13 @@ func GetFigurePath() (string, error) {
 	}
 	return path, nil
 }
+
+func DirExists(path string) (bool, error) {
+	stat, err := os.Stat(path)
+	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+		return false, err
+	} else if err != nil {
+		return false, nil
+	}
+	return stat.IsDir(), nil
+}
