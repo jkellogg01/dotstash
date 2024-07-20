@@ -2,27 +2,27 @@ package files
 
 import (
 	"os"
+	"strings"
 	"testing"
 )
 
-func TestGotoFigureRoot(t *testing.T) {
-	home, err := os.UserHomeDir()
+func TestGetFigurePath(t *testing.T) {
+	path, err := GetFigurePath()
 	if err != nil {
-		t.Fatalf("could not find user home dir: %s", err)
+		t.Fatal(err)
 	}
-	err = os.Chdir(home)
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		t.Fatalf("could not move to home dir: %s", err)
+		t.Fatalf("failed to get user home dir")
 	}
-	err = GotoFigureRoot()
-	if err != nil {
-		t.Fatalf("GotoFigureRoot returned an error: %s", err)
+	_, cut := strings.CutPrefix(path, homeDir)
+	if !cut {
+		t.Error("path does not contain home directory")
 	}
-	wd, err := os.Getwd()
-	if err != nil {
-		t.Fatalf("could not get working directory: %s", err)
-	}
-	if wd != home+string(os.PathSeparator)+".figure" {
-		t.Fatalf("GotoFigureRoot did not result in wd being ~/.figure")
+	segments := strings.Split(path, string(os.PathSeparator))
+	if len(segments) <= 0 {
+		t.Errorf("got malformed path: %s", path)
+	} else if segments[len(segments)-1] != ".figure" {
+		t.Error("path does not lead to a '.figure' folder")
 	}
 }
