@@ -1,18 +1,15 @@
 package cmd
 
 import (
-	"context"
-	"errors"
-	"io/fs"
 	"os"
 
-	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/bubbles/filepicker"
+	"github.com/charmbracelet/bubbles/key"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/log"
 	"github.com/jkellogg01/figure/files"
 	"github.com/spf13/cobra"
 )
-
-var makeForm = huh.NewForm(huh.NewGroup())
 
 var makeCmd = &cobra.Command{
 	Use:   "make [dir]",
@@ -38,14 +35,7 @@ func makeFn(cmd *cobra.Command, args []string) error {
 		if v {
 			path = argPath
 		}
-	}
-	err = makeForm.RunWithContext(context.WithValue(
-		context.Background(),
-		"root",
-		path,
-	))
-	if err != nil {
-		return err
+		log.Debug("", "path", path)
 	}
 	return nil
 }
