@@ -51,9 +51,25 @@ func makeFn(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	log.Debugf("successfully created a new config dir at %s", newCfgPath)
+	if len(args) > 1 {
+		wd, err := os.Getwd()
+		if err != nil {
+			log.Error("failed to get current workdir", "error", err)
+		}
+		for _, name := range args[1:] {
+			log.Debugf("adding %s", name)
+			info, err := os.Stat(name)
+			if err != nil {
+				log.Errorf("failed to open '%s': %s", name, err)
+			}
+			path := wd + string(os.PathSeparator) + info.Name()
+			log.Debugf("%s is at path %s", name, path)
+		}
+	}
 	return nil
 }
 
 func init() {
 	rootCmd.AddCommand(makeCmd)
+	// TODO add a flag for an interactive mode when there is an interactive mode to opt into
 }
