@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
+	"path"
 
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/log"
@@ -41,11 +41,14 @@ var cleanCmd = &cobra.Command{
 			log.Info("clean cancelled.")
 		}
 		for _, file := range files {
-			name := root + string(os.PathSeparator) + file.Name()
+			name := path.Join(root, file.Name())
 			log.Debugf("Removing dir %s", name)
-			err = errors.Join(err, os.Remove(name))
+			err := os.RemoveAll(name)
+			if err != nil {
+				return err
+			}
 		}
-		return err
+		return nil
 	},
 }
 
