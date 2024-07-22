@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 
@@ -39,12 +40,12 @@ var cleanCmd = &cobra.Command{
 		if !confirm {
 			log.Info("clean cancelled.")
 		}
-		err = os.RemoveAll(root)
-		if err != nil {
-			return err
+		for _, file := range files {
+			name := root + string(os.PathSeparator) + file.Name()
+			log.Debugf("Removing dir %s", name)
+			err = errors.Join(err, os.Remove(name))
 		}
-		log.Infof("%d configuration directories removed", fileCount)
-		return nil
+		return err
 	},
 }
 
