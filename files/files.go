@@ -4,7 +4,7 @@ import (
 	"errors"
 	"io/fs"
 	"os"
-	"strings"
+	"path"
 )
 
 func GetFigurePath() (string, error) {
@@ -12,31 +12,20 @@ func GetFigurePath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	path := PathAppend(homeDir, ".figure")
-	err = os.Mkdir(path, fs.ModeDir|fs.ModePerm)
+	p := path.Join(homeDir, ".figure")
+	err = os.Mkdir(p, 0750)
 	if err != nil && !errors.Is(err, fs.ErrExist) {
 		return "", err
 	}
-	return path, nil
+	return p, nil
 }
 
-func DirExists(path string) (bool, error) {
-	stat, err := os.Stat(path)
+func DirExists(p string) (bool, error) {
+	stat, err := os.Stat(p)
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		return false, err
 	} else if err != nil {
 		return false, nil
 	}
 	return stat.IsDir(), nil
-}
-
-func PathAppend(path string, names ...string) string {
-	if len(names) == 0 {
-		return path
-	}
-	segments := strings.Split(path, string(os.PathSeparator))
-	for _, name := range names {
-		segments = append(segments, name)
-	}
-	return strings.Join(segments, string(os.PathSeparator))
 }

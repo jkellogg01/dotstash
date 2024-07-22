@@ -6,6 +6,7 @@ import (
 	"io/fs"
 	"os"
 	"os/user"
+	"path"
 
 	"github.com/charmbracelet/log"
 	"github.com/jkellogg01/figure/files"
@@ -38,17 +39,24 @@ func makeFn(cmd *cobra.Command, args []string) error {
 	}
 	for _, name := range args {
 		log.Infof("adding %s...", name)
-		info, err := os.Stat(name)
+		var oldPath, newPath string
+		if path.IsAbs(name) {
+			dir, name := path.Split(name)
+			oldPath = path.Join(dir, name)
+			newPath = path.Join(root, name)
+		} else {
+			oldPath = path.Join(wd, name)
+			newPath = path.Join(root, name)
+		}
+		log.Debug("got the following paths", "old", oldPath, "new", newPath)
+		err := errors.Join(
+			os.Rename(oldPath, newPath),
+			os.Symlink(newPath, oldPath),
+			os.Chmod(oldPath, 0750),
+		)
 		if err != nil {
 			return err
 		}
-		path := wd + string(os.PathSeparator) + info.Name()
-		log.Debugf("%s is at path %s", name, path)
-		err = os.Rename(path, root+name)
-		if err != nil {
-			return err
-		}
-
 	}
 	return nil
 }
@@ -59,8 +67,8 @@ func createConfigDir(name string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	newCfgPath := files.PathAppend(figRoot, name)
-	err = os.Mkdir(newCfgPath, os.ModeDir|777)
+	newCfgPath := path.Join(figRoot, name)
+	err = os.Mkdir(newCfgPath, 0750)
 	if errors.Is(err, fs.ErrExist) {
 		log.Infof("directory '%s' already exists. backing up and replacing...", newCfgPath)
 		i := 0
@@ -85,7 +93,7 @@ func createConfigDir(name string) (string, error) {
 		return "", err
 	}
 	log.Infof("successfully created a new config dir at %s", newCfgPath)
-	return newCfgPath + string(os.PathSeparator), nil
+	return newCfgPath, nil
 }
 
 func init() {
