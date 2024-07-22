@@ -25,11 +25,41 @@ var makeCmd = &cobra.Command{
 }
 
 func makeFn(cmd *cobra.Command, args []string) error {
-	figRoot, err := files.GetFigurePath()
+	root, err := createConfigDir(dirName)
 	if err != nil {
 		return err
 	}
-	newCfgPath := figRoot + string(os.PathSeparator) + dirName
+	if len(args) == 0 {
+		return nil
+	}
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Error("failed to get current workdir", "error", err)
+	}
+	for _, name := range args {
+		log.Infof("adding %s...", name)
+		info, err := os.Stat(name)
+		if err != nil {
+			return err
+		}
+		path := wd + string(os.PathSeparator) + info.Name()
+		log.Debugf("%s is at path %s", name, path)
+		err = os.Rename(path, root+name)
+		if err != nil {
+			return err
+		}
+
+	}
+	return nil
+}
+
+// createConfigDir will append a path separator to the end of the path to the new directory.
+func createConfigDir(name string) (string, error) {
+	figRoot, err := files.GetFigurePath()
+	if err != nil {
+		return "", err
+	}
+	newCfgPath := files.PathAppend(figRoot, name)
 	err = os.Mkdir(newCfgPath, os.ModeDir|777)
 	if errors.Is(err, fs.ErrExist) {
 		log.Infof("directory '%s' already exists. backing up and replacing...", newCfgPath)
@@ -43,34 +73,19 @@ func makeFn(cmd *cobra.Command, args []string) error {
 		}
 		if err != nil {
 			log.Error("failed to create backup", "error", err)
-			return err
+			return "", err
 		}
 		err = os.Mkdir(newCfgPath, os.ModeDir|777)
 		if err != nil {
 			log.Error("failed to create new config dir", "error", err)
-			return err
+			return "", err
 		}
 	} else if err != nil {
 		log.Error("failed to create new config dir", "error", err)
-		return err
+		return "", err
 	}
-	log.Debugf("successfully created a new config dir at %s", newCfgPath)
-	if len(args) > 0 {
-		wd, err := os.Getwd()
-		if err != nil {
-			log.Error("failed to get current workdir", "error", err)
-		}
-		for _, name := range args {
-			log.Debugf("adding %s", name)
-			info, err := os.Stat(name)
-			if err != nil {
-				log.Errorf("failed to open '%s': %s", name, err)
-			}
-			path := wd + string(os.PathSeparator) + info.Name()
-			log.Debugf("%s is at path %s", name, path)
-		}
-	}
-	return nil
+	log.Infof("successfully created a new config dir at %s", newCfgPath)
+	return newCfgPath + string(os.PathSeparator), nil
 }
 
 func init() {
