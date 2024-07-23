@@ -26,6 +26,9 @@ type ConfigTarget struct {
 	Dst string `json:"dst"`
 }
 
+func ReadManifest(path string) (*ConfigMetadata, error) {
+}
+
 // NOTE: d.Emit should point to the config DIRECTORY; it will create manifest.json on its own.
 func (d *ConfigMetadata) EmitManifest(path string) error {
 	dst := filepath.Join(path, "manifest.json")
@@ -47,6 +50,16 @@ func (d *ConfigMetadata) writeJson(w io.Writer) error {
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "  ")
 	return encoder.Encode(d)
+}
+
+func readJson(w io.Reader) (*ConfigMetadata, error) {
+	decoder := json.NewDecoder(w)
+	result := new(ConfigMetadata)
+	err := decoder.Decode(result)
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 // NOTE: in this case src and dst refer to the source inside of the config repository,

@@ -9,7 +9,6 @@ import (
 
 func main() {
 	log.SetReportTimestamp(false)
-	log.SetOutput(os.Stdout)
 	if os.Getenv("MODE") == "dev" {
 		log.SetLevel(log.DebugLevel)
 	}

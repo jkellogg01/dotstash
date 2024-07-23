@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/charmbracelet/log"
-	"github.com/jkellogg01/figure/files"
 	"github.com/jkellogg01/figure/git"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -17,15 +15,15 @@ var rootCmd = &cobra.Command{
 	Short: "An easy way to manage your configuration files",
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
+	rootCmd.SetErrPrefix(log.DefaultStyles().Levels[log.ErrorLevel].Render("ERRO"))
 	version, err := git.CheckGitInstalled()
 	if err != nil {
 		log.Fatal("error finding git installation!\n\tmake sure you have git installed; figure will not work without it.")
 	} else if version == "" {
 		log.Fatal("couldn't find a git installation!\n\tmake sure you have git installed; figure will not work without it.")
 	}
+	log.Debug("checked and found git installation", "version", version)
 	err = rootCmd.Execute()
 	if err != nil {
 		os.Exit(1)
@@ -38,11 +36,11 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	path, err := files.GetFigurePath()
+	path, err := os.UserConfigDir()
 	cobra.CheckErr(err)
 
 	viper.AddConfigPath(path)
-	viper.SetConfigType("toml")
+	viper.SetConfigType("json")
 	viper.SetConfigName("figure")
 
 	viper.AutomaticEnv() // read in environment variables that match
@@ -56,6 +54,6 @@ func initConfig() {
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
-		fmt.Fprintln(os.Stderr, "Using config file:", viper.ConfigFileUsed())
+		log.Infof("Using config file: %v", viper.ConfigFileUsed())
 	}
 }

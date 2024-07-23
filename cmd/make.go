@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -132,17 +131,6 @@ func createConfigDir(name string) (string, error) {
 	}
 	log.Infof("successfully created a new config dir at %s", newCfgPath)
 	return newCfgPath, nil
-}
-
-func (m configMeta) Write(p string) error {
-	log.Debugf("%+v", m)
-	target, err := os.Create(path.Join(p, "manifest.json"))
-	if err != nil {
-		return err
-	}
-	w := json.NewEncoder(target)
-	w.SetIndent("", "  ")
-	return w.Encode(m)
 }
 
 func init() {
