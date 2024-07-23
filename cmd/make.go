@@ -11,6 +11,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/jkellogg01/figure/files"
+	"github.com/jkellogg01/figure/manifest"
 	"github.com/spf13/cobra"
 )
 
@@ -24,24 +25,14 @@ var makeCmd = &cobra.Command{
 	RunE:  makeFn,
 }
 
-type configMeta struct {
-	Name  string
-	Paths []configTarget
-}
-
-type configTarget struct {
-	RepoPath   string
-	ConfigPath string
-}
-
 func makeFn(cmd *cobra.Command, args []string) error {
 	root, err := createConfigDir(dirName)
 	if err != nil {
 		return err
 	}
-	metadata := configMeta{Name: dirName}
+	var metadata manifest.ConfigMetadata
 	if len(args) == 0 {
-		metadata.Write(root)
+		metadata.EmitManifest(root)
 		return nil
 	}
 	wd, err := os.Getwd()
@@ -59,16 +50,13 @@ func makeFn(cmd *cobra.Command, args []string) error {
 			oldPath = path.Join(wd, name)
 			newPath = path.Join(root, name)
 		}
-		metadata.Paths = append(metadata.Paths, configTarget{
-			RepoPath:   newPath,
-			ConfigPath: oldPath,
-		})
+		metadata.AppendTarget(newPath, oldPath)
 		log.Debug("got the following paths", "old", oldPath, "new", newPath)
 		if err := linkSubstitute(oldPath, newPath); err != nil {
 			return err
 		}
 	}
-	metadata.Write(root)
+	metadata.EmitManifest(root)
 	return nil
 }
 
@@ -146,6 +134,17 @@ func createConfigDir(name string) (string, error) {
 	return newCfgPath, nil
 }
 
+func (m configMeta) Write(p string) error {
+	log.Debugf("%+v", m)
+	target, err := os.Create(path.Join(p, "manifest.json"))
+	if err != nil {
+		return err
+	}
+	w := json.NewEncoder(target)
+	w.SetIndent("", "  ")
+	return w.Encode(m)
+}
+
 func init() {
 	rootCmd.AddCommand(makeCmd)
 	var defaultDirName string
@@ -156,16 +155,5 @@ func init() {
 		defaultDirName = user.Username
 	}
 	makeCmd.Flags().StringVarP(&dirName, "name", "n", defaultDirName, "the name of the config directory to create. Defaults to the username for the current user, or 'dotfiles' if no username is available")
-	// TODO add a flag for an interactive mode when there is an interactive mode to opt into
-}
-
-func (m configMeta) Write(p string) error {
-	log.Debugf("%+v", m)
-	target, err := os.Create(path.Join(p, "manifest.json"))
-	if err != nil {
-		return err
-	}
-	w := json.NewEncoder(target)
-	w.SetIndent("", "  ")
-	return w.Encode(m)
+	// TODO: add a flag for an interactive mode when there is an interactive mode to opt into
 }

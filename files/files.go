@@ -6,7 +6,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/log"
@@ -17,7 +17,7 @@ func GetFigurePath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	p := path.Join(homeDir, ".figure")
+	p := filepath.Join(homeDir, ".figure")
 	err = os.Mkdir(p, 0o640)
 	if err != nil && !errors.Is(err, fs.ErrExist) {
 		return "", err
@@ -86,8 +86,8 @@ func deepCopy(src, dst string) error {
 	}
 	for _, entry := range srcDir {
 		err := deepCopy(
-			path.Join(src, entry.Name()),
-			path.Join(dst, entry.Name()),
+			filepath.Join(src, entry.Name()),
+			filepath.Join(dst, entry.Name()),
 		)
 		if err != nil {
 			return err
