@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"time"
 
 	"github.com/charmbracelet/log"
 	"github.com/jkellogg01/figure/files"
@@ -29,7 +30,10 @@ func makeFn(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	var metadata manifest.ConfigMetadata
+	metadata := manifest.ConfigMetadata{
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
 	if len(args) == 0 {
 		metadata.EmitManifest(root)
 		return nil
@@ -81,7 +85,7 @@ func linkSubstitute(oldPath, newPath string) error {
 	}
 	err = errors.Join(
 		os.Symlink(newPath, oldPath),
-		os.Chmod(oldPath, 0o640),
+		os.Chmod(oldPath, 0o700),
 	)
 	if err == nil {
 		err = os.RemoveAll(backupName)
@@ -105,7 +109,7 @@ func createConfigDir(name string) (string, error) {
 		return "", err
 	}
 	newCfgPath := path.Join(figRoot, name)
-	err = os.Mkdir(newCfgPath, 0o640)
+	err = os.Mkdir(newCfgPath, 0o700)
 	if errors.Is(err, fs.ErrExist) {
 		log.Infof("directory '%s' already exists. backing up and replacing...", newCfgPath)
 		i := 0
@@ -120,7 +124,7 @@ func createConfigDir(name string) (string, error) {
 			log.Error("failed to create backup", "error", err)
 			return "", err
 		}
-		err = os.Mkdir(newCfgPath, 0o640)
+		err = os.Mkdir(newCfgPath, 0o700)
 		if err != nil {
 			log.Error("failed to create new config dir", "error", err)
 			return "", err

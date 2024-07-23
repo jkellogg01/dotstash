@@ -2,10 +2,14 @@ package manifest
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/charmbracelet/log"
 	"github.com/jkellogg01/figure/files"
@@ -17,8 +21,18 @@ const (
 	configPathAbbr = "#cfg"
 )
 
+type pathfunc func() (string, error)
+
+var pathMap = map[string]pathfunc{
+	figurePathAbbr: files.GetFigurePath,
+	homePathAbbr:   os.UserHomeDir,
+	configPathAbbr: os.UserConfigDir,
+}
+
 type ConfigMetadata struct {
-	Targets []ConfigTarget `json:"targets"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	Targets   []ConfigTarget `json:"targets"`
 }
 
 type ConfigTarget struct {
@@ -26,24 +40,47 @@ type ConfigTarget struct {
 	Dst string `json:"dst"`
 }
 
-func ReadManifest(path string) (*ConfigMetadata, error) {
-}
-
-// NOTE: d.Emit should point to the config DIRECTORY; it will create manifest.json on its own.
+// NOTE: path should point to the config DIRECTORY; it will create manifest.json on its own.
 func (d *ConfigMetadata) EmitManifest(path string) error {
 	dst := filepath.Join(path, "manifest.json")
 	dstFile, err := os.Create(dst)
 	if err != nil {
 		return err
 	}
-	defer func() {
-		closeErr := dstFile.Close()
-		if err == nil {
-			err = closeErr
+	defer dstFile.Close()
+	// err = dstFile.Chmod(0o664)
+	// if err != nil {
+	// 	log.Warnf("could not change permissions for manifest at %s", dst)
+	// }
+	if info, err := dstFile.Stat(); err == nil {
+		log.Debugf("manifest permissions: %s", info.Mode().Perm().String())
+	} else {
+		log.Error(err)
+	}
+	return d.writeJson(dstFile)
+}
+
+func ReadManifest(path string) (*ConfigMetadata, error) {
+	src := filepath.Join(path, "manifest.json")
+	srcFile, err := os.Open(src)
+	if errors.Is(err, fs.ErrPermission) {
+		info, statErr := os.Stat(src)
+		if statErr != nil {
+			return nil, fmt.Errorf("Tried and failed to get more info about the problematic file. Original error: %w", err)
 		}
-	}()
-	err = d.writeJson(dstFile)
-	return err
+		perms := info.Mode().Perm().String()
+		return nil, fmt.Errorf("%w\n\tProblematic file permissions: %s", err, perms)
+	} else if err != nil {
+		return nil, err
+	}
+	result, err := readJson(srcFile)
+	if err := srcFile.Close(); err != nil {
+		log.Errorf("failed to close manifest file after reading: %s", err)
+	}
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
 }
 
 func (d *ConfigMetadata) writeJson(w io.Writer) error {

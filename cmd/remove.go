@@ -5,6 +5,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/jkellogg01/figure/files"
+	"github.com/jkellogg01/figure/manifest"
 	"github.com/spf13/cobra"
 )
 
@@ -25,6 +26,11 @@ func removeFn(cmd *cobra.Command, args []string) error {
 	// this should check which config is set as 'primary' and/or if it is being
 	// referenced for any config targets. for now we will just assume the named
 	// directory is primary
+	meta, err := manifest.ReadManifest(targetPath)
+	if err != nil {
+		return err
+	}
+	log.Debugf("%+v", meta)
 	return nil
 }
 
