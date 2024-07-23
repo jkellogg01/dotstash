@@ -14,23 +14,21 @@ import (
 	"github.com/jkellogg01/figure/files"
 )
 
-const (
-	figurePathAbbr = "#fig"
-	homePathAbbr   = "#hom"
-	configPathAbbr = "#cfg"
+var (
+	dotstashPath,
+	configPath,
+	homePath string
 )
 
-type pathfunc func() (string, error)
-
-var pathMap = map[string]pathfunc{
-	figurePathAbbr: files.GetFigurePath,
-	homePathAbbr:   os.UserHomeDir,
-	configPathAbbr: os.UserConfigDir,
-}
+const (
+	dotstashPathAbbr = "#dst"
+	homePathAbbr     = "#hom"
+	configPathAbbr   = "#cfg"
+)
 
 type ConfigMetadata struct {
-	Author  string
-	Targets []ConfigTarget `json:"targets"`
+	Author  string `json:"author"`
+	targets []ConfigTarget
 }
 
 type ConfigTarget struct {
@@ -46,10 +44,10 @@ func (d *ConfigMetadata) EmitManifest(path string) error {
 		return err
 	}
 	defer dstFile.Close()
-	// err = dstFile.Chmod(0o664)
-	// if err != nil {
-	// 	log.Warnf("could not change permissions for manifest at %s", dst)
-	// }
+	err = dstFile.Chmod(0o640)
+	if err != nil {
+		log.Warnf("could not change permissions for manifest at %s", dst)
+	}
 	if info, err := dstFile.Stat(); err == nil {
 		log.Debugf("manifest permissions: %s", info.Mode().Perm().String())
 	} else {
@@ -81,6 +79,74 @@ func ReadManifest(path string) (*ConfigMetadata, error) {
 	return result, nil
 }
 
+func (d ConfigMetadata) Targets() ([]ConfigTarget, error) {
+	result := make([]ConfigTarget, 0, len(d.targets))
+	for _, t := range d.targets {
+		result = append(result, t.expand())
+	}
+	return result, nil
+}
+
+// NOTE: in this case src and dst refer to the source inside of the config repository,
+// and the destination in the user's configuration files.
+// For example, if I was storing my neovim config:
+// src = "nvim"
+// dst = "#hom/.config/nvim"
+func (d *ConfigMetadata) AppendTarget(src, dst string) {
+	d.targets = append(d.targets, ConfigTarget{
+		Src: compressPath(src),
+		Dst: compressPath(dst),
+	})
+}
+
+// NOTE: unlike expansion, compression must happen in order from deepest to shallowest path.
+func compressPath(p string) string {
+	var (
+		post string
+		cut  bool
+	)
+	post, cut = strings.CutPrefix(p, dotstashPath)
+	if cut {
+		return filepath.Join(dotstashPathAbbr, post)
+	}
+	post, cut = strings.CutPrefix(p, configPath)
+	if cut {
+		return filepath.Join(configPathAbbr, post)
+	}
+	post, cut = strings.CutPrefix(p, homePath)
+	if cut {
+		return filepath.Join(homePathAbbr, post)
+	}
+	return p
+}
+
+func (t ConfigTarget) expand() ConfigTarget {
+	return ConfigTarget{
+		Src: expandPath(t.Src),
+		Dst: expandPath(t.Dst),
+	}
+}
+
+func expandPath(p string) string {
+	var (
+		post string
+		cut  bool
+	)
+	post, cut = strings.CutPrefix(p, dotstashPathAbbr)
+	if cut {
+		return filepath.Join(dotstashPath, post)
+	}
+	post, cut = strings.CutPrefix(p, configPathAbbr)
+	if cut {
+		return filepath.Join(configPath, post)
+	}
+	post, cut = strings.CutPrefix(p, homePathAbbr)
+	if cut {
+		return filepath.Join(homePath, post)
+	}
+	return p
+}
+
 func (d *ConfigMetadata) writeJson(w io.Writer) error {
 	encoder := json.NewEncoder(w)
 	encoder.SetIndent("", "  ")
@@ -97,49 +163,18 @@ func readJson(w io.Reader) (*ConfigMetadata, error) {
 	return result, nil
 }
 
-// NOTE: in this case src and dst refer to the source inside of the config repository,
-// and the destination in the user's configuration files.
-// For example, if I was storing my neovim config:
-// src = "nvim"
-// dst = "#hom/.config/nvim"
-func (d *ConfigMetadata) AppendTarget(src, dst string) error {
-	var toAppend ConfigTarget
-
-	figPath, err := files.GetFigurePath()
+func init() {
+	var err error
+	dotstashPath, err = files.GetFigurePath()
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
-	post, cut := strings.CutPrefix(src, figPath)
-	if !cut {
-		log.Warn("source name did not begin with figure's home path, this may be indicative of a problem with the app.", "src", src)
-	}
-	toAppend.Src = post
-
-	// NOTE: we open the home path first even though we don't check for it later because
-	// the os package docs say that a failure to locate the home directory is the most
-	// common failure mode for os.UserConfigDir
-	homPath, err := os.UserHomeDir()
+	configPath, err = os.UserConfigDir()
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
-	cfgPath, err := os.UserConfigDir()
+	homePath, err = os.UserHomeDir()
 	if err != nil {
-		log.Error("config directory could not be determined", "error", err)
-		return err
+		log.Fatal(err)
 	}
-	var compressedDst string
-	postConfig, cfgCut := strings.CutPrefix(dst, cfgPath)
-	postHome, homCut := strings.CutPrefix(dst, homPath)
-	switch {
-	case cfgCut:
-		compressedDst = filepath.Join(configPathAbbr, postConfig)
-	case homCut:
-		compressedDst = filepath.Join(homePathAbbr, postHome)
-	default:
-		compressedDst = dst
-	}
-	toAppend.Dst = compressedDst
-
-	d.Targets = append(d.Targets, toAppend)
-	return nil
 }
