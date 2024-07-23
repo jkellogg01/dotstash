@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/fs"
@@ -20,9 +21,17 @@ var (
 var makeCmd = &cobra.Command{
 	Use:   "make [-n name] [file]...",
 	Short: "set up a git repository and add config files to it",
-	Long: `make starts an interactive command prompt to set up a new git repository for your configuration files.
-	you can optionally specify a starting dir; the prompt will start in $XDG_CONFIG_HOME by default.`,
-	RunE: makeFn,
+	RunE:  makeFn,
+}
+
+type configMeta struct {
+	Name  string
+	Paths []configTarget
+}
+
+type configTarget struct {
+	RepoPath   string
+	ConfigPath string
 }
 
 func makeFn(cmd *cobra.Command, args []string) error {
@@ -30,7 +39,9 @@ func makeFn(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	metadata := configMeta{Name: dirName}
 	if len(args) == 0 {
+		metadata.Write(root)
 		return nil
 	}
 	wd, err := os.Getwd()
@@ -48,11 +59,16 @@ func makeFn(cmd *cobra.Command, args []string) error {
 			oldPath = path.Join(wd, name)
 			newPath = path.Join(root, name)
 		}
+		metadata.Paths = append(metadata.Paths, configTarget{
+			RepoPath:   newPath,
+			ConfigPath: oldPath,
+		})
 		log.Debug("got the following paths", "old", oldPath, "new", newPath)
 		if err := linkSubstitute(oldPath, newPath); err != nil {
 			return err
 		}
 	}
+	metadata.Write(root)
 	return nil
 }
 
@@ -78,7 +94,7 @@ func linkSubstitute(oldPath, newPath string) error {
 	}
 	err = errors.Join(
 		os.Symlink(newPath, oldPath),
-		os.Chmod(oldPath, 0o750),
+		os.Chmod(oldPath, 0o640),
 	)
 	if err == nil {
 		err = os.RemoveAll(backupName)
@@ -102,7 +118,7 @@ func createConfigDir(name string) (string, error) {
 		return "", err
 	}
 	newCfgPath := path.Join(figRoot, name)
-	err = os.Mkdir(newCfgPath, 0o750)
+	err = os.Mkdir(newCfgPath, 0o640)
 	if errors.Is(err, fs.ErrExist) {
 		log.Infof("directory '%s' already exists. backing up and replacing...", newCfgPath)
 		i := 0
@@ -117,7 +133,7 @@ func createConfigDir(name string) (string, error) {
 			log.Error("failed to create backup", "error", err)
 			return "", err
 		}
-		err = os.Mkdir(newCfgPath, 0o750)
+		err = os.Mkdir(newCfgPath, 0o640)
 		if err != nil {
 			log.Error("failed to create new config dir", "error", err)
 			return "", err
@@ -141,4 +157,15 @@ func init() {
 	}
 	makeCmd.Flags().StringVarP(&dirName, "name", "n", defaultDirName, "the name of the config directory to create. Defaults to the username for the current user, or 'dotfiles' if no username is available")
 	// TODO add a flag for an interactive mode when there is an interactive mode to opt into
+}
+
+func (m configMeta) Write(p string) error {
+	log.Debugf("%+v", m)
+	target, err := os.Create(path.Join(p, "manifest.json"))
+	if err != nil {
+		return err
+	}
+	w := json.NewEncoder(target)
+	w.SetIndent("", "  ")
+	return w.Encode(m)
 }

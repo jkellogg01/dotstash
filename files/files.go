@@ -18,7 +18,7 @@ func GetFigurePath() (string, error) {
 		return "", err
 	}
 	p := path.Join(homeDir, ".figure")
-	err = os.Mkdir(p, 0o750)
+	err = os.Mkdir(p, 0o640)
 	if err != nil && !errors.Is(err, fs.ErrExist) {
 		return "", err
 	}
