@@ -1,9 +1,13 @@
 package git
 
 import (
+	"bytes"
 	"io"
+	"os"
 	"os/exec"
 	"strings"
+
+	"github.com/charmbracelet/log"
 )
 
 func CheckGitInstalled() (string, error) {
@@ -24,4 +28,26 @@ func CheckGitInstalled() (string, error) {
 	}
 	after, _ := strings.CutPrefix(string(data), "git version ")
 	return after, nil
+}
+
+func InitRepo(path string) error {
+	wd, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	err = os.Chdir(path)
+	if err != nil {
+		return err
+	}
+	cmd := exec.Command("git", "init")
+	outbuf, errbuf := new(bytes.Buffer), new(bytes.Buffer)
+	cmd.Stdout = outbuf
+	cmd.Stderr = errbuf
+	log.Debugf("running command %s", cmd.String())
+	err = cmd.Run()
+	if err != nil {
+		return err
+	}
+	log.Debug("", "stdout", outbuf.String(), "stderr", errbuf.String())
+	return os.Chdir(wd)
 }

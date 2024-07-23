@@ -10,6 +10,7 @@ import (
 
 	"github.com/charmbracelet/log"
 	"github.com/jkellogg01/figure/files"
+	"github.com/jkellogg01/figure/git"
 	"github.com/jkellogg01/figure/manifest"
 	"github.com/spf13/cobra"
 )
@@ -32,6 +33,11 @@ func makeFn(cmd *cobra.Command, args []string) error {
 	}
 	metadata := manifest.ConfigMetadata{
 		Author: author,
+	}
+	log.Info("initializing a git repository in the new directory...")
+	err = git.InitRepo(root)
+	if err != nil {
+		log.Error("failed to initialize git repository", "error", err)
 	}
 	if len(args) == 0 {
 		metadata.EmitManifest(root)
