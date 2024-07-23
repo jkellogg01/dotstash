@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/user"
 	"path"
-	"time"
 
 	"github.com/charmbracelet/log"
 	"github.com/jkellogg01/figure/files"
@@ -17,10 +16,11 @@ import (
 
 var (
 	dirName string
+	author  string
 )
 
 var makeCmd = &cobra.Command{
-	Use:   "make [-n name] [file]...",
+	Use:   "make [flags] [file]...",
 	Short: "set up a git repository and add config files to it",
 	RunE:  makeFn,
 }
@@ -31,8 +31,7 @@ func makeFn(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	metadata := manifest.ConfigMetadata{
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		Author: author,
 	}
 	if len(args) == 0 {
 		metadata.EmitManifest(root)
@@ -139,13 +138,12 @@ func createConfigDir(name string) (string, error) {
 
 func init() {
 	rootCmd.AddCommand(makeCmd)
-	var defaultDirName string
+	makeCmd.Flags().StringVarP(&dirName, "name", "n", "dotstash", "the name of the config directory to create")
+	var defaultAuthorName string
 	user, err := user.Current()
-	if err != nil {
-		defaultDirName = "dotfiles"
-	} else {
-		defaultDirName = user.Username
+	if err == nil {
+		defaultAuthorName = user.Username
 	}
-	makeCmd.Flags().StringVarP(&dirName, "name", "n", defaultDirName, "the name of the config directory to create. Defaults to the username for the current user, or 'dotfiles' if no username is available")
+	makeCmd.Flags().StringVarP(&author, "author", "a", defaultAuthorName, "author name for the repository. defaults to blank if no usernmae can be found")
 	// TODO: add a flag for an interactive mode when there is an interactive mode to opt into
 }

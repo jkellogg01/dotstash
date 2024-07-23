@@ -9,7 +9,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
 
 	"github.com/charmbracelet/log"
 	"github.com/jkellogg01/figure/files"
@@ -30,9 +29,8 @@ var pathMap = map[string]pathfunc{
 }
 
 type ConfigMetadata struct {
-	CreatedAt time.Time
-	UpdatedAt time.Time
-	Targets   []ConfigTarget `json:"targets"`
+	Author  string
+	Targets []ConfigTarget `json:"targets"`
 }
 
 type ConfigTarget struct {
