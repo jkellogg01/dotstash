@@ -60,7 +60,7 @@ func makeFn(cmd *cobra.Command, args []string) error {
 		}
 		metadata.AppendTarget(newPath, oldPath)
 		log.Debug("got the following paths", "old", oldPath, "new", newPath)
-		if err := files.LinkSubstitute(oldPath, newPath); err != nil {
+		if err := files.SubstituteForSymlink(oldPath, newPath); err != nil {
 			return err
 		}
 	}
