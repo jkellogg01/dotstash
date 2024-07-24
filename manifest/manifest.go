@@ -27,8 +27,8 @@ const (
 )
 
 type ConfigMetadata struct {
-	Author  string `json:"author"`
-	targets []ConfigTarget
+	Author  string         `json:"author"`
+	Targets []ConfigTarget `json:"targets"`
 }
 
 type ConfigTarget struct {
@@ -79,12 +79,12 @@ func ReadManifest(path string) (*ConfigMetadata, error) {
 	return result, nil
 }
 
-func (d ConfigMetadata) Targets() ([]ConfigTarget, error) {
-	result := make([]ConfigTarget, 0, len(d.targets))
-	for _, t := range d.targets {
+func (d ConfigMetadata) ExpandTargets() []ConfigTarget {
+	result := make([]ConfigTarget, 0, len(d.Targets))
+	for _, t := range d.Targets {
 		result = append(result, t.expand())
 	}
-	return result, nil
+	return result
 }
 
 // NOTE: in this case src and dst refer to the source inside of the config repository,
@@ -93,10 +93,12 @@ func (d ConfigMetadata) Targets() ([]ConfigTarget, error) {
 // src = "nvim"
 // dst = "#hom/.config/nvim"
 func (d *ConfigMetadata) AppendTarget(src, dst string) {
-	d.targets = append(d.targets, ConfigTarget{
+	newTarget := ConfigTarget{
 		Src: compressPath(src),
 		Dst: compressPath(dst),
-	})
+	}
+	log.Debug("appending target", "target", newTarget.String())
+	d.Targets = append(d.Targets, newTarget)
 }
 
 // NOTE: unlike expansion, compression must happen in order from deepest to shallowest path.
@@ -148,19 +150,25 @@ func expandPath(p string) string {
 }
 
 func (d *ConfigMetadata) writeJson(w io.Writer) error {
-	encoder := json.NewEncoder(w)
-	encoder.SetIndent("", "  ")
-	return encoder.Encode(d)
+	data, err := json.Marshal(d)
+	if err != nil {
+		return err
+	}
+	n, err := w.Write(data)
+	if n != len(data) {
+		return errors.New("did not write enough data!")
+	}
+	return err
 }
 
 func readJson(w io.Reader) (*ConfigMetadata, error) {
 	decoder := json.NewDecoder(w)
-	result := new(ConfigMetadata)
-	err := decoder.Decode(result)
+	result := ConfigMetadata{}
+	err := decoder.Decode(&result)
 	if err != nil {
 		return nil, err
 	}
-	return result, nil
+	return &result, nil
 }
 
 func init() {
@@ -177,4 +185,8 @@ func init() {
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func (t ConfigTarget) String() string {
+	return fmt.Sprintf("%s => %s", t.Src, t.Dst)
 }

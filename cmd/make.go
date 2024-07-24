@@ -58,12 +58,13 @@ func makeFn(cmd *cobra.Command, args []string) error {
 			oldPath = path.Join(wd, name)
 			newPath = path.Join(root, name)
 		}
-		metadata.AppendTarget(newPath, oldPath)
 		log.Debug("got the following paths", "old", oldPath, "new", newPath)
+		metadata.AppendTarget(newPath, oldPath)
 		if err := files.SubstituteForSymlink(oldPath, newPath); err != nil {
 			return err
 		}
 	}
+	log.Debug(metadata.ExpandTargets())
 	metadata.EmitManifest(root)
 	return nil
 }
@@ -111,6 +112,6 @@ func init() {
 	if err == nil {
 		defaultAuthorName = user.Username
 	}
-	makeCmd.Flags().StringVarP(&author, "author", "a", defaultAuthorName, "author name for the repository. defaults to blank if no usernmae can be found")
+	makeCmd.Flags().StringVarP(&author, "author", "a", defaultAuthorName, "author name for the repository. defaults to blank if no username can be found")
 	// TODO: add a flag for an interactive mode when there is an interactive mode to opt into
 }

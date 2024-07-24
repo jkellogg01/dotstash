@@ -23,7 +23,6 @@ func removeFn(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	targetPath := path.Join(figRoot, args[0])
-	log.Debug(targetPath)
 	// TODO: when storing and swapping between multiple configs is supported,
 	// this should check which config is set as 'primary' and/or if it is being
 	// referenced for any config targets. for now we will just assume the named
@@ -32,14 +31,9 @@ func removeFn(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	targets, err := meta.Targets()
-	if err != nil {
-		return err
-	}
+	targets := meta.ExpandTargets()
 	if os.Getenv("MODE") == "dev" {
-		for _, t := range targets {
-			log.Debugf("%s => %s", t.Src, t.Dst)
-		}
+		log.Debug("got yer targets here", "targets", targets)
 		var didConfirm bool
 		confirm := huh.NewConfirm().Value(&didConfirm).Title("dev mode: confirm delete")
 		err = confirm.Run()
@@ -51,7 +45,15 @@ func removeFn(cmd *cobra.Command, args []string) error {
 		}
 	}
 	log.Debug("confirmed, starting deletion")
-	return nil
+	for _, t := range targets {
+		log.Info("substituting symlink at %s for %s", t.Dst, t.Src)
+		err := files.Substitute(t.Src, t.Dst)
+		if err != nil {
+			return err
+		}
+	}
+	log.Info("everything in its proper place. deleting directory...")
+	return os.RemoveAll(targetPath)
 }
 
 func init() {

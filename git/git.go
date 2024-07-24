@@ -40,14 +40,14 @@ func InitRepo(path string) error {
 		return err
 	}
 	cmd := exec.Command("git", "init")
-	outbuf, errbuf := new(bytes.Buffer), new(bytes.Buffer)
-	cmd.Stdout = outbuf
-	cmd.Stderr = errbuf
+	buf := new(bytes.Buffer)
+	cmd.Stdout = buf
+	cmd.Stderr = buf
 	log.Debugf("running command %s", cmd.String())
 	err = cmd.Run()
 	if err != nil {
 		return err
 	}
-	log.Debug("", "stdout", outbuf.String(), "stderr", errbuf.String())
+	log.Debug("", "output", buf.String())
 	return os.Chdir(wd)
 }

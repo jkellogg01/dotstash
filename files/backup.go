@@ -19,7 +19,8 @@ func MakeTempFallback(src string) (fs.ReadDirFile, error) {
 		log.Errorf("failed to get info about %s", src)
 		return nil, err
 	}
-	tempNamePattern := strings.Join(strings.Split(src, string(os.PathSeparator)), ".")
+	splitPath := strings.Split(strings.Trim(filepath.ToSlash(src), "/"), "/")
+	tempNamePattern := strings.Join(splitPath, "_")
 	mode := info.Mode()
 	switch {
 	case mode.IsRegular():
@@ -48,6 +49,7 @@ func MakeTempFallback(src string) (fs.ReadDirFile, error) {
 }
 
 func deepCopy(src, dst string) error {
+	// log.Debugf("starting deep copy: %s => %s", src, dst)
 	sfi, err := os.Stat(src)
 	if err != nil {
 		return err
@@ -56,6 +58,10 @@ func deepCopy(src, dst string) error {
 		return copyFile(src, dst)
 	} else if !sfi.IsDir() {
 		return fmt.Errorf("%s is neiter a directory nor a regular file", src)
+	}
+	err = os.Mkdir(dst, 0o700)
+	if err != nil && !errors.Is(err, fs.ErrExist) {
+		return err
 	}
 	srcDir, err := os.ReadDir(src)
 	if err != nil {
@@ -74,6 +80,7 @@ func deepCopy(src, dst string) error {
 }
 
 func copyFile(src, dst string) error {
+	log.Debugf("starting file copy: %s => %s", src, dst)
 	sfi, err := os.Stat(src)
 	if err != nil {
 		return err
@@ -81,7 +88,9 @@ func copyFile(src, dst string) error {
 		return fmt.Errorf("[copyFile] source file %s is not regular", src)
 	}
 	dfi, err := os.Stat(dst)
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
+	if errors.Is(err, fs.ErrNotExist) {
+		// noop
+	} else if err != nil {
 		return err
 	} else if !dfi.Mode().IsRegular() {
 		return fmt.Errorf("[copyFile] destination file %s is not regular", dst)
