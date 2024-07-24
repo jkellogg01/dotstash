@@ -2,12 +2,9 @@ package files
 
 import (
 	"errors"
-	"fmt"
-	"io"
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/charmbracelet/log"
 )
@@ -25,119 +22,41 @@ func GetDotstashPath() (string, error) {
 	return p, nil
 }
 
-func DirExists(p string) (bool, error) {
-	stat, err := os.Stat(p)
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
-		return false, err
-	} else if err != nil {
-		return false, nil
-	}
-	return stat.IsDir(), nil
-}
-
-func MakeTempFallback(src string) (fs.ReadDirFile, error) {
-	log.Debugf("making a fallback for %s", src)
-	info, err := os.Stat(src)
-	if err != nil {
-		log.Errorf("failed to get info about %s", src)
-		return nil, err
-	}
-	tempNamePattern := strings.Join(strings.Split(src, string(os.PathSeparator)), ".")
-	mode := info.Mode()
-	switch {
-	case mode.IsRegular():
-		log.Debugf("%s is a regular file", src)
-		f, err := os.CreateTemp("", tempNamePattern)
-		if err != nil {
-			return nil, err
-		}
-		err = copyFile(src, f.Name())
-		return wrappedFile{f}, err
-	case mode.IsDir():
-		log.Debugf("%s is a directory", src)
-		dirName, err := os.MkdirTemp("", tempNamePattern)
-		if err != nil {
-			return nil, err
-		}
-		dir, err := os.Open(dirName)
-		if err != nil {
-			panic("created a temp dir but could not get a pointer to it!")
-		}
-		err = deepCopy(src, dirName)
-		return dir, err
-	default:
-		return nil, fmt.Errorf("source file %s is neither a directory nor a regular file. making fallbacks of other types of files is not supported at this time.", src)
-	}
-}
-
-func deepCopy(src, dst string) error {
-	sfi, err := os.Stat(src)
+func LinkSubstitute(oldPath, newPath string) error {
+	backup, err := MakeTempFallback(oldPath)
 	if err != nil {
 		return err
 	}
-	if sfi.Mode().IsRegular() {
-		return copyFile(src, dst)
-	} else if !sfi.IsDir() {
-		return fmt.Errorf("%s is neiter a directory nor a regular file", src)
-	}
-	srcDir, err := os.ReadDir(src)
+	defer backup.Close()
+	backupInfo, err := backup.Stat()
 	if err != nil {
 		return err
 	}
-	for _, entry := range srcDir {
-		err := deepCopy(
-			filepath.Join(src, entry.Name()),
-			filepath.Join(dst, entry.Name()),
-		)
-		if err != nil {
-			return err
+	backupName := backupInfo.Name()
+	err = os.Rename(oldPath, newPath)
+	if err != nil {
+		log.Errorf("failed to move %s to %s. deleting backup and moving on...", oldPath, newPath)
+		cleanupErr := os.RemoveAll(backupName)
+		if cleanupErr != nil {
+			log.Errorf("failed to clean up backup: %s", cleanupErr)
 		}
-	}
-	return nil
-}
-
-func copyFile(src, dst string) error {
-	sfi, err := os.Stat(src)
-	if err != nil {
 		return err
-	} else if !sfi.Mode().IsRegular() {
-		return fmt.Errorf("[copyFile] source file %s is not regular", src)
 	}
-	dfi, err := os.Stat(dst)
-	if err != nil && !errors.Is(err, fs.ErrNotExist) {
-		return err
-	} else if !dfi.Mode().IsRegular() {
-		return fmt.Errorf("[copyFile] destination file %s is not regular", dst)
-	}
-
-	if os.SameFile(sfi, dfi) {
+	err = errors.Join(
+		os.Symlink(newPath, oldPath),
+		os.Chmod(oldPath, 0o700),
+	)
+	if err == nil {
+		err = os.RemoveAll(backupName)
+		if err != nil {
+			log.Errorf("backup not cleaned up: %s", err)
+		}
 		return nil
 	}
-
-	if err := os.Link(src, dst); err == nil {
-		return nil
+	restoreBackupError := os.Rename(backupName, oldPath)
+	err = errors.Join(err, restoreBackupError)
+	if restoreBackupError != nil {
+		log.Errorf("failed to restore %s from backup. backup is located at: %s", oldPath, backup)
 	}
-
-	srcFile, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer srcFile.Close()
-
-	dstFile, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer dstFile.Close()
-
-	_, err = io.Copy(dstFile, srcFile)
 	return err
-}
-
-type wrappedFile struct {
-	*os.File
-}
-
-func (f wrappedFile) ReadDir(int) ([]fs.DirEntry, error) {
-	return nil, errors.New("this file is not a directory")
 }

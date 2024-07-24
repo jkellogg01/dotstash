@@ -60,51 +60,12 @@ func makeFn(cmd *cobra.Command, args []string) error {
 		}
 		metadata.AppendTarget(newPath, oldPath)
 		log.Debug("got the following paths", "old", oldPath, "new", newPath)
-		if err := linkSubstitute(oldPath, newPath); err != nil {
+		if err := files.LinkSubstitute(oldPath, newPath); err != nil {
 			return err
 		}
 	}
 	metadata.EmitManifest(root)
 	return nil
-}
-
-func linkSubstitute(oldPath, newPath string) error {
-	backup, err := files.MakeTempFallback(oldPath)
-	if err != nil {
-		return err
-	}
-	defer backup.Close()
-	backupInfo, err := backup.Stat()
-	if err != nil {
-		return err
-	}
-	backupName := backupInfo.Name()
-	err = os.Rename(oldPath, newPath)
-	if err != nil {
-		log.Errorf("failed to move %s to %s. deleting backup and moving on...", oldPath, newPath)
-		cleanupErr := os.RemoveAll(backupName)
-		if cleanupErr != nil {
-			log.Errorf("failed to clean up backup: %s", cleanupErr)
-		}
-		return err
-	}
-	err = errors.Join(
-		os.Symlink(newPath, oldPath),
-		os.Chmod(oldPath, 0o700),
-	)
-	if err == nil {
-		err = os.RemoveAll(backupName)
-		if err != nil {
-			log.Errorf("backup not cleaned up: %s", err)
-		}
-		return nil
-	}
-	restoreBackupError := os.Rename(backupName, oldPath)
-	err = errors.Join(err, restoreBackupError)
-	if restoreBackupError != nil {
-		log.Errorf("failed to restore %s from backup. backup is located at: %s", oldPath, backup)
-	}
-	return err
 }
 
 // createConfigDir will append a path separator to the end of the path to the new directory.
