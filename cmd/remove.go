@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"os"
 	"path"
 
+	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/log"
 	"github.com/jkellogg01/dotstash/files"
 	"github.com/jkellogg01/dotstash/manifest"
@@ -30,11 +32,28 @@ func removeFn(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
-	log.Debugf("%+v", meta)
+	targets, err := meta.Targets()
+	if err != nil {
+		return err
+	}
+	if os.Getenv("MODE") == "dev" {
+		for _, t := range targets {
+			log.Debugf("%s => %s", t.Src, t.Dst)
+		}
+		var didConfirm bool
+		confirm := huh.NewConfirm().Value(&didConfirm).Title("dev mode: confirm delete")
+		err = confirm.Run()
+		if err != nil {
+			return err
+		}
+		if !didConfirm {
+			return nil
+		}
+	}
+	log.Debug("confirmed, starting deletion")
 	return nil
 }
 
 func init() {
 	rootCmd.AddCommand(removeCmd)
-	// TODO: this will probably also have an interactive mode at some point
 }
