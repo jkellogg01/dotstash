@@ -12,12 +12,12 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-func GetFigurePath() (string, error) {
+func GetDotstashPath() (string, error) {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	p := filepath.Join(homeDir, ".figure")
+	p := filepath.Join(homeDir, ".dotstash")
 	err = os.Mkdir(p, 0o700)
 	if err != nil && !errors.Is(err, fs.ErrExist) {
 		return "", err

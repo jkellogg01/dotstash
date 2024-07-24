@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/charmbracelet/log"
-	"github.com/jkellogg01/figure/cmd"
+	"github.com/jkellogg01/dotstash/cmd"
 )
 
 func main() {

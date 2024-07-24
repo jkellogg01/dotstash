@@ -4,14 +4,14 @@ import (
 	"os"
 
 	"github.com/charmbracelet/log"
-	"github.com/jkellogg01/figure/git"
+	"github.com/jkellogg01/dotstash/git"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "figure",
+	Use:   "dotstash",
 	Short: "An easy way to manage your configuration files",
 }
 
@@ -19,9 +19,9 @@ func Execute() {
 	rootCmd.SetErrPrefix(log.DefaultStyles().Levels[log.ErrorLevel].Render("ERRO"))
 	version, err := git.CheckGitInstalled()
 	if err != nil {
-		log.Fatal("error finding git installation!\n\tmake sure you have git installed; figure will not work without it.")
+		log.Fatal("error finding git installation!\n\tmake sure you have git installed; dotstash will not work without it.")
 	} else if version == "" {
-		log.Fatal("couldn't find a git installation!\n\tmake sure you have git installed; figure will not work without it.")
+		log.Fatal("couldn't find a git installation!\n\tmake sure you have git installed; dotstash will not work without it.")
 	}
 	log.Debug("checked and found git installation", "version", version)
 	err = rootCmd.Execute()
@@ -41,7 +41,7 @@ func initConfig() {
 
 	viper.AddConfigPath(path)
 	viper.SetConfigType("json")
-	viper.SetConfigName("figure")
+	viper.SetConfigName("dotstash")
 
 	viper.AutomaticEnv() // read in environment variables that match
 	if os.Getenv("MODE") == "dev" {

@@ -1,4 +1,4 @@
-# figure
+# dotstash!
 a go program for managing dotfiles conveniently
 
 ## TODO

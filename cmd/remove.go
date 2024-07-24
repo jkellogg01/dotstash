@@ -4,8 +4,8 @@ import (
 	"path"
 
 	"github.com/charmbracelet/log"
-	"github.com/jkellogg01/figure/files"
-	"github.com/jkellogg01/figure/manifest"
+	"github.com/jkellogg01/dotstash/files"
+	"github.com/jkellogg01/dotstash/manifest"
 	"github.com/spf13/cobra"
 )
 
@@ -16,7 +16,7 @@ var removeCmd = &cobra.Command{
 }
 
 func removeFn(cmd *cobra.Command, args []string) error {
-	figRoot, err := files.GetFigurePath()
+	figRoot, err := files.GetDotstashPath()
 	if err != nil {
 		return err
 	}

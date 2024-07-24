@@ -2,27 +2,35 @@ package files
 
 import (
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
 
-func TestGetFigurePath(t *testing.T) {
-	path, err := GetFigurePath()
+var homePath string
+
+func TestGetDotstashPath(t *testing.T) {
+	path, err := GetDotstashPath()
 	if err != nil {
 		t.Fatal(err)
 	}
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		t.Fatalf("failed to get user home dir")
-	}
-	_, cut := strings.CutPrefix(path, homeDir)
+	_, cut := strings.CutPrefix(path, homePath)
 	if !cut {
 		t.Error("path does not contain home directory")
 	}
-	segments := strings.Split(path, string(os.PathSeparator))
-	if len(segments) <= 0 {
+	segments := filepath.SplitList(path)
+	if len(segments) == 0 {
 		t.Errorf("got malformed path: %s", path)
-	} else if segments[len(segments)-1] != ".figure" {
-		t.Error("path does not lead to a '.figure' folder")
+	}
+	if filepath.Base(path) != ".dotstash" {
+		t.Error("path does not lead to a '.dotstash' folder")
+	}
+}
+
+func init() {
+	var err error
+	homePath, err = os.UserHomeDir()
+	if err != nil {
+		panic(err)
 	}
 }

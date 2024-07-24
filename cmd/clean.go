@@ -7,17 +7,17 @@ import (
 
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/log"
-	"github.com/jkellogg01/figure/files"
+	"github.com/jkellogg01/dotstash/files"
 	"github.com/spf13/cobra"
 )
 
 var cleanCmd = &cobra.Command{
 	Use:   "clean",
-	Short: "[WARNING] DEVELOPMENT ONLY! clean will remove ALL of your stored figure directories.",
+	Short: "[WARNING] DEVELOPMENT ONLY! clean will remove ALL of your stored dotstash directories.",
 	Long: `[WARNING] THIS IS A DEVELOPER TOOL! IT IS NOT RECOMMENDED THAT YOU _EVER_ USE THIS COMMAND IN PRODUCTION [WARNING]
-	clean will delete figure's root directory and everything inside it. This is intended to make repeated teasting of the program more convenient and is not recommended for figure users under any circumstances.`,
+	clean will delete dotstash's root directory and everything inside it. This is intended to make repeated teasting of the program more convenient and is not recommended for dotstash users under any circumstances.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		root, err := files.GetFigurePath()
+		root, err := files.GetDotstashPath()
 		if err != nil {
 			return err
 		}
@@ -29,7 +29,7 @@ var cleanCmd = &cobra.Command{
 		var confirm bool
 		err = huh.NewConfirm().
 			Title("WARNING: you are using a DESTRUCTIVE developer tool.").
-			Description(fmt.Sprintf("This is not recommended for users under any circumstances.\nAre you sure you want to delete your figure directory and all %d entries it contains?", fileCount)).
+			Description(fmt.Sprintf("This is not recommended for users under any circumstances.\nAre you sure you want to delete your dotstash directory and all %d entries it contains?", fileCount)).
 			Affirmative("Delete my data").
 			Negative("That seems bad").
 			Value(&confirm).
