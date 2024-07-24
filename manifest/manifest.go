@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/charmbracelet/log"
-	"github.com/jkellogg01/figure/files"
+	"github.com/jkellogg01/dotstash/files"
 )
 
 var (
@@ -165,7 +165,7 @@ func readJson(w io.Reader) (*ConfigMetadata, error) {
 
 func init() {
 	var err error
-	dotstashPath, err = files.GetFigurePath()
+	dotstashPath, err = files.GetDotstashPath()
 	if err != nil {
 		log.Fatal(err)
 	}

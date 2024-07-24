@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/charmbracelet/log"
-	"github.com/jkellogg01/figure/files"
+	"github.com/jkellogg01/dotstash/files"
 )
 
 var (
@@ -67,7 +67,7 @@ func init() {
 	if err != nil {
 		tlog.Fatal("could not retrieve config directory for testing")
 	}
-	dsDir, err = files.GetFigurePath()
+	dsDir, err = files.GetDotstashPath()
 	if err != nil {
 		tlog.Fatal("could not retrieve dotstash directory for testing")
 	}

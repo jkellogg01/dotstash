@@ -9,9 +9,9 @@ import (
 	"path"
 
 	"github.com/charmbracelet/log"
-	"github.com/jkellogg01/figure/files"
-	"github.com/jkellogg01/figure/git"
-	"github.com/jkellogg01/figure/manifest"
+	"github.com/jkellogg01/dotstash/files"
+	"github.com/jkellogg01/dotstash/git"
+	"github.com/jkellogg01/dotstash/manifest"
 	"github.com/spf13/cobra"
 )
 
@@ -109,7 +109,7 @@ func linkSubstitute(oldPath, newPath string) error {
 
 // createConfigDir will append a path separator to the end of the path to the new directory.
 func createConfigDir(name string) (string, error) {
-	figRoot, err := files.GetFigurePath()
+	figRoot, err := files.GetDotstashPath()
 	if err != nil {
 		return "", err
 	}

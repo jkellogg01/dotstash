@@ -1,4 +1,4 @@
-module github.com/jkellogg01/figure
+module github.com/jkellogg01/dotstash
 
 go 1.22.2
 
