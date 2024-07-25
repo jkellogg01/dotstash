@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -59,7 +58,12 @@ func listFn(cmd *cobra.Command, args []string) error {
 	}).Enumerator(func(items list.Items, index int) string { return "" })
 	for _, e := range entries {
 		entryPath := filepath.Join(dotstashPath, e.Name())
-		l.Item(newListItem(entryPath))
+		item, err := newListItem(entryPath)
+		if err != nil {
+			log.Error("failed to create info for config item", "path", entryPath)
+			continue
+		}
+		l.Item(item)
 	}
 	fmt.Println()
 	fmt.Println(l)
@@ -75,6 +79,12 @@ type listItem struct {
 func (l listItem) String() string {
 	titleStyle := lipgloss.NewStyle().Bold(true)
 	descStyle := lipgloss.NewStyle().Italic(true)
+	if len(l.modules) == 0 {
+		return lipgloss.JoinVertical(0,
+			titleStyle.Render(l.title),
+			descStyle.Render(l.description),
+		)
+	}
 	return lipgloss.JoinVertical(0,
 		titleStyle.Render(l.title),
 		descStyle.Render(l.description),
@@ -109,7 +119,20 @@ func renderBoxRow(items []string, border lipgloss.Border) string {
 	return b.String()
 }
 
-func newListItem(path string) string
+func newListItem(path string) (listItem, error) {
+	result := listItem{}
+	result.title = filepath.Base(path)
+	meta, err := manifest.ReadManifest(path)
+	if err != nil {
+		return listItem{}, err
+	}
+	result.description = "by " + meta.Author
+	result.modules = make([]string, 0, len(meta.Targets))
+	for _, t := range meta.Targets {
+		result.modules = append(result.modules, filepath.Base(t.Src))
+	}
+	return result, nil
+}
 
 func init() {
 	rootCmd.AddCommand(listCmd)
