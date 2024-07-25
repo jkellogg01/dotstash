@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/log"
@@ -51,7 +52,7 @@ func makeFn(cmd *cobra.Command, args []string) error {
 	for _, name := range args {
 		log.Infof("adding %s...", name)
 		var oldPath, newPath string
-		if path.IsAbs(name) {
+		if filepath.IsAbs(name) {
 			dir, name := path.Split(name)
 			oldPath = path.Join(dir, name)
 			newPath = path.Join(root, name)

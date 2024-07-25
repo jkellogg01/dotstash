@@ -50,7 +50,7 @@ func removeFn(cmd *cobra.Command, args []string) error {
 	}
 	log.Debug("confirmed, starting deletion")
 	for _, t := range targets {
-		log.Info("substituting symlink at %s for %s", t.Dst, t.Src)
+		log.Infof("substituting symlink at %s for %s", t.Dst, t.Src)
 		err := files.Substitute(t.Src, t.Dst)
 		if err != nil {
 			return err

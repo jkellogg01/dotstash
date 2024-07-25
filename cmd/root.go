@@ -4,9 +4,14 @@ import (
 	"os"
 
 	"github.com/charmbracelet/log"
+	"github.com/jkellogg01/dotstash/files"
 	"github.com/jkellogg01/dotstash/git"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+)
+
+var (
+	dotstashPath string
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -32,6 +37,11 @@ func Execute() {
 
 func init() {
 	cobra.OnInitialize(initConfig)
+	var err error
+	dotstashPath, err = files.GetDotstashPath()
+	if err != nil {
+		panic("could not get dotstash path")
+	}
 }
 
 // initConfig reads in config file and ENV variables if set.

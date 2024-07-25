@@ -9,14 +9,9 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/list"
 	"github.com/charmbracelet/log"
-	"github.com/jkellogg01/dotstash/files"
 	"github.com/jkellogg01/dotstash/manifest"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-)
-
-var (
-	dotstashPath string
 )
 
 var listCmd = &cobra.Command{
@@ -136,9 +131,4 @@ func newListItem(path string) (listItem, error) {
 
 func init() {
 	rootCmd.AddCommand(listCmd)
-	var err error
-	dotstashPath, err = files.GetDotstashPath()
-	if err != nil {
-		panic("could not get dotstash path")
-	}
 }
