@@ -56,6 +56,7 @@ func (d *ConfigMetadata) EmitManifest(path string) error {
 	return d.writeJson(dstFile)
 }
 
+// NOTE: path should not include 'manifest.json'
 func ReadManifest(path string) (*ConfigMetadata, error) {
 	src := filepath.Join(path, "manifest.json")
 	srcFile, err := os.Open(src)

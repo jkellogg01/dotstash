@@ -4,7 +4,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/charmbracelet/log"
 	"github.com/jkellogg01/dotstash/files"
 )
 
@@ -56,19 +55,16 @@ func TestExpand(t *testing.T) {
 
 func init() {
 	var err error
-	tlog := log.NewWithOptions(os.Stderr, log.Options{
-		Prefix: "[TESTING]",
-	})
 	homeDir, err = os.UserHomeDir()
 	if err != nil {
-		tlog.Fatal("could not retrieve home directory for testing")
+		panic("could not retrieve home directory for testing")
 	}
 	cfgDir, err = os.UserConfigDir()
 	if err != nil {
-		tlog.Fatal("could not retrieve config directory for testing")
+		panic("could not retrieve config directory for testing")
 	}
 	dsDir, err = files.GetDotstashPath()
 	if err != nil {
-		tlog.Fatal("could not retrieve dotstash directory for testing")
+		panic("could not retrieve dotstash directory for testing")
 	}
 }

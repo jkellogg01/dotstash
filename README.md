@@ -11,3 +11,4 @@ a go program for managing dotfiles conveniently
 - [ ] remove/delete? command to remove a config file or directory from a repository
 - [ ] list command to list all config repositories
 - [ ] select command to select a 'primary' config and link the config files from it
+- [ ] more visual polish; interactive modes for commands that didn't need them before

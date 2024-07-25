@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/user"
 	"path"
+	"strings"
 
 	"github.com/charmbracelet/log"
 	"github.com/jkellogg01/dotstash/files"
@@ -32,7 +33,7 @@ func makeFn(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	metadata := manifest.ConfigMetadata{
-		Author: author,
+		Author: strings.TrimSpace(author),
 	}
 	log.Info("initializing a git repository in the new directory...")
 	err = git.InitRepo(root)
