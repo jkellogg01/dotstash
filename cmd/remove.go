@@ -11,6 +11,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
+var (
+	noRestore bool
+)
+
 var removeCmd = &cobra.Command{
 	Use:  "remove name",
 	Args: cobra.ExactArgs(1),
@@ -58,4 +62,6 @@ func removeFn(cmd *cobra.Command, args []string) error {
 
 func init() {
 	rootCmd.AddCommand(removeCmd)
+
+	removeCmd.Flags().BoolVar(&noRestore, "no-restore", false, "do not restore configurations to their original locations, even if no other configuration is targeting that location")
 }

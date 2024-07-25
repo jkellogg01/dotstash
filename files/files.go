@@ -22,8 +22,9 @@ func GetDotstashPath() (string, error) {
 	return p, nil
 }
 
-// remove the file or directory at `dst`, replacing it the file or directory at `src`
+// remove the file or directory at `dst`, replacing it with the file or directory at `src`
 func Substitute(src, dst string) error {
+	// NOTE: os.RemoveAll DOES NOT return fs.ErrNotExist if the path does not exist
 	err := os.RemoveAll(dst)
 	if err != nil {
 		return err

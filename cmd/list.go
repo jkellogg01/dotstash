@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -33,7 +32,8 @@ func listFn(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	if len(entries) == 0 {
-		return errors.New("couldn't find any config files!")
+		log.Error("couldn't find any config files!")
+		return nil
 	}
 	primary := viper.GetString("primary_config")
 	if primary == "" {
