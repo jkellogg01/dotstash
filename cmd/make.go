@@ -6,7 +6,6 @@ import (
 	"io/fs"
 	"os"
 	"os/user"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -51,14 +50,15 @@ func makeFn(cmd *cobra.Command, args []string) error {
 	}
 	for _, name := range args {
 		log.Infof("adding %s...", name)
+		name := filepath.Clean(name)
 		var oldPath, newPath string
 		if filepath.IsAbs(name) {
-			dir, name := path.Split(name)
-			oldPath = path.Join(dir, name)
-			newPath = path.Join(root, name)
+			dir, name := filepath.Split(name)
+			oldPath = filepath.Join(dir, name)
+			newPath = filepath.Join(root, name)
 		} else {
-			oldPath = path.Join(wd, name)
-			newPath = path.Join(root, name)
+			oldPath = filepath.Join(wd, name)
+			newPath = filepath.Join(root, name)
 		}
 		log.Debug("got the following paths", "old", oldPath, "new", newPath)
 		metadata.AppendTarget(newPath, oldPath)
@@ -77,7 +77,7 @@ func createConfigDir(name string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	newCfgPath := path.Join(figRoot, name)
+	newCfgPath := filepath.Join(figRoot, name)
 	err = os.Mkdir(newCfgPath, 0o700)
 	if errors.Is(err, fs.ErrExist) {
 		log.Infof("directory '%s' already exists. backing up and replacing...", newCfgPath)
