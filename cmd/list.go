@@ -27,7 +27,6 @@ var listCmd = &cobra.Command{
 }
 
 func listFn(cmd *cobra.Command, args []string) error {
-	// TODO: determine the primary set of configuration files
 	entries, err := os.ReadDir(dotstashPath)
 	if err != nil {
 		return err
@@ -35,6 +34,12 @@ func listFn(cmd *cobra.Command, args []string) error {
 	primary := viper.GetString("primary_config")
 	if primary == "" {
 		primary = entries[0].Name()
+		viper.Set("primary_config", primary)
+		// HACK: we shouldn't ever actually need to do this, it's mostly here for testing
+		err := viper.WriteConfig()
+		if err != nil {
+			log.Error("failed to write to config", "error", err)
+		}
 	}
 	log.Debug("", "primary", primary)
 

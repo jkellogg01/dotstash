@@ -55,5 +55,7 @@ func initConfig() {
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		log.Infof("Using config file: %v", viper.ConfigFileUsed())
+	} else {
+		viper.SafeWriteConfig()
 	}
 }
