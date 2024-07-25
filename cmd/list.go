@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
@@ -31,6 +33,9 @@ func listFn(cmd *cobra.Command, args []string) error {
 	if err != nil {
 		return err
 	}
+	if len(entries) == 0 {
+		return errors.New("couldn't find any config files!")
+	}
 	primary := viper.GetString("primary_config")
 	if primary == "" {
 		primary = entries[0].Name()
@@ -54,22 +59,57 @@ func listFn(cmd *cobra.Command, args []string) error {
 	}).Enumerator(func(items list.Items, index int) string { return "" })
 	for _, e := range entries {
 		entryPath := filepath.Join(dotstashPath, e.Name())
-		meta, err := manifest.ReadManifest(entryPath)
-		if err != nil {
-			continue
-		}
-		l.Item(listItem(e.Name(), "by "+meta.Author))
+		l.Item(newListItem(entryPath))
 	}
 	fmt.Println()
 	fmt.Println(l)
 	return nil
 }
 
-func listItem(title, description string) string {
+type listItem struct {
+	title       string
+	description string
+	modules     []string
+}
+
+func (l listItem) String() string {
 	titleStyle := lipgloss.NewStyle().Bold(true)
 	descStyle := lipgloss.NewStyle().Italic(true)
-	return lipgloss.JoinVertical(0, titleStyle.Render(title), descStyle.Render(description))
+	return lipgloss.JoinVertical(0,
+		titleStyle.Render(l.title),
+		descStyle.Render(l.description),
+		renderBoxRow(l.modules, lipgloss.NormalBorder()),
+	)
 }
+
+func renderBoxRow(items []string, border lipgloss.Border) string {
+	var b strings.Builder
+
+	b.WriteString(border.TopLeft)
+	for i, item := range items {
+		if i != 0 {
+			b.WriteString(border.MiddleTop)
+		}
+		b.WriteString(strings.Repeat(border.Top, len(item)))
+	}
+	b.WriteString(border.TopRight + "\n")
+	for _, item := range items {
+		b.WriteString(border.Left)
+		b.WriteString(item)
+	}
+	b.WriteString(border.Right + "\n")
+	b.WriteString(border.BottomLeft)
+	for i, item := range items {
+		if i != 0 {
+			b.WriteString(border.MiddleBottom)
+		}
+		b.WriteString(strings.Repeat(border.Top, len(item)))
+	}
+	b.WriteString(border.BottomRight)
+	return b.String()
+}
+
+func newListItem(path string) string
 
 func init() {
 	rootCmd.AddCommand(listCmd)
