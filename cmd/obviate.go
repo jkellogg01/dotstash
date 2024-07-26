@@ -40,16 +40,17 @@ func obviateFn(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	for _, t := range metadata.ExpandTargets() {
-		if !slices.Contains(args, filepath.Base(t.Src)) {
+		basename := filepath.Base(t.Src)
+		if !slices.Contains(args, basename) {
 			continue
 		}
 		err := files.Substitute(t.Src, t.Dst)
 		if err != nil {
 			log.Error("substitution failed", "target", t, "error", err)
 		}
-		// TODO: manifest.RemoveTarget
+		metadata.RemoveTarget(basename)
 	}
-	return nil
+	return metadata.EmitManifest(targetPath)
 }
 
 func init() {

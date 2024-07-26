@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/charmbracelet/log"
@@ -78,6 +79,18 @@ func ReadManifest(path string) (*ConfigMetadata, error) {
 		return nil, err
 	}
 	return result, nil
+}
+
+// RemoveTarget takes the basename of the target as it appears in the config repository.
+func (d *ConfigMetadata) RemoveTarget(base string) {
+	targets := d.ExpandTargets()
+	for i, target := range targets {
+		if filepath.Base(target.Src) != base {
+			continue
+		}
+		targets = slices.Concat(targets[:i], targets[i+1:])
+	}
+	d.Targets = targets
 }
 
 func (d ConfigMetadata) ExpandTargets() []ConfigTarget {
