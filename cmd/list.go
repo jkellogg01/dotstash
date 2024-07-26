@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -44,8 +45,13 @@ func listFn(cmd *cobra.Command, args []string) error {
 
 	l := list.New().ItemStyleFunc(func(items list.Items, index int) lipgloss.Style {
 		def := lipgloss.NewStyle().
-			Padding(0, 1).MarginBottom(1).Border(lipgloss.NormalBorder(), false, false, false, true)
-		if strings.Contains(items.At(index).Value(), primary) {
+			Padding(0, 1).
+			MarginBottom(1).
+			Border(lipgloss.NormalBorder(), false, false, false, true)
+		item := strings.Split(items.At(index).Value(), "\n")
+		primaryRendered := lipgloss.NewStyle().Bold(true).Render(primary)
+		// HACK: I know why I did this but I have no clue what the cause of the problem it's solving is.
+		if string(bytes.TrimRight([]byte(item[0]), string(32))) == primaryRendered {
 			highlight := lipgloss.Color("#F780E2")
 			return def.Foreground(highlight).BorderForeground(highlight)
 		}
