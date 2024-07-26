@@ -18,4 +18,4 @@ a go program for managing dotfiles conveniently
   - [ ] more consistent use of a more specific set of APIs and standard library packages
 - [ ] more visual polish; interactive modes for commands that didn't need them before
 
-[1]: the terms 'depend' and 'obviate' might be a bit obscuring here, but I wanted them to be substantially different from 'make' and 'remove' and so those are the terms I'm using.
+[^1]: the terms 'depend' and 'obviate' might be a bit obscuring here, but I wanted them to be substantially different from 'make' and 'remove' and so those are the terms I'm using.
