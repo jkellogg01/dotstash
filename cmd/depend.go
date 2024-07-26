@@ -13,7 +13,6 @@ import (
 
 var repoName string
 
-// dependCmd represents the depend command
 var dependCmd = &cobra.Command{
 	Use:     "depend [-r repository] path...",
 	Aliases: []string{"add-config"},
