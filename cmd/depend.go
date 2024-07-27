@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 	"github.com/jkellogg01/dotstash/files"
 	"github.com/jkellogg01/dotstash/manifest"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var repoName string
@@ -26,6 +28,12 @@ func dependFunc(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	var target os.DirEntry
+	if repoName == "" {
+		repoName = viper.GetString("primary_config")
+		if repoName == "" {
+			return errors.New("no repository specified, and no primary repository")
+		}
+	}
 	for _, e := range repos {
 		if e.Name() == repoName {
 			target = e
@@ -68,5 +76,4 @@ func init() {
 	rootCmd.AddCommand(dependCmd)
 
 	dependCmd.Flags().StringVarP(&repoName, "repository", "r", "", "the repository to add the dependency to")
-	dependCmd.MarkFlagRequired("repository")
 }

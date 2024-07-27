@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -10,6 +11,7 @@ import (
 	"github.com/jkellogg01/dotstash/files"
 	"github.com/jkellogg01/dotstash/manifest"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var obviateCmd = &cobra.Command{
@@ -23,6 +25,12 @@ func obviateFn(cmd *cobra.Command, args []string) error {
 	repos, err := os.ReadDir(dotstashPath)
 	if err != nil {
 		return err
+	}
+	if repoName == "" {
+		repoName = viper.GetString("primary_config")
+		if repoName == "" {
+			return errors.New("no repository specified, and no primary repository")
+		}
 	}
 	var target os.DirEntry
 	for _, e := range repos {
@@ -57,5 +65,4 @@ func init() {
 	rootCmd.AddCommand(obviateCmd)
 
 	obviateCmd.Flags().StringVarP(&repoName, "repository", "r", "", "the repository to remove the config from")
-	obviateCmd.MarkFlagRequired("repository")
 }
