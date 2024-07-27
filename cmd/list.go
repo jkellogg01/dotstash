@@ -1,14 +1,13 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/lipgloss/list"
+	"github.com/charmbracelet/lipgloss/table"
 	"github.com/charmbracelet/log"
 	"github.com/jkellogg01/dotstash/manifest"
 	"github.com/spf13/cobra"
@@ -23,6 +22,10 @@ var listCmd = &cobra.Command{
 }
 
 func listFn(cmd *cobra.Command, args []string) error {
+	var (
+		indigo  = lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"}
+		fuchsia = lipgloss.Color("#F780E2")
+	)
 	entries, err := os.ReadDir(dotstashPath)
 	if err != nil {
 		return err
@@ -41,98 +44,62 @@ func listFn(cmd *cobra.Command, args []string) error {
 			log.Error("failed to write to config", "error", err)
 		}
 	}
-	log.Debug("", "primary", primary)
-
-	l := list.New().ItemStyleFunc(func(items list.Items, index int) lipgloss.Style {
-		def := lipgloss.NewStyle().
-			Padding(0, 1).
-			MarginBottom(1).
-			Border(lipgloss.NormalBorder(), false, false, false, true)
-		item := strings.Split(items.At(index).Value(), "\n")
-		primaryRendered := lipgloss.NewStyle().Bold(true).Render(primary)
-		// HACK: I know why I did this but I have no clue what the cause of the problem it's solving is.
-		if string(bytes.TrimRight([]byte(item[0]), string(32))) == primaryRendered {
-			highlight := lipgloss.Color("#F780E2")
-			return def.Foreground(highlight).BorderForeground(highlight)
-		}
-		return def
-	}).Enumerator(func(items list.Items, index int) string { return "" })
+	t := table.New().
+		Border(lipgloss.HiddenBorder()).
+		BorderStyle(lipgloss.NewStyle().Foreground(indigo)).
+		BorderColumn(false).
+		BorderHeader(false).
+		Headers("Primary", "Name", "Author", "Modules")
+	var primaryRow int
+	currentRow := 1
 	for _, e := range entries {
-		entryPath := filepath.Join(dotstashPath, e.Name())
-		item, err := newListItem(entryPath)
+		p := filepath.Join(dotstashPath, e.Name())
+		meta, err := manifest.ReadManifest(p)
 		if err != nil {
-			log.Error("failed to create info for config item", "path", entryPath)
+			log.Error("failed to get metadata, skipping...", "path", p, "error", err)
 			continue
 		}
-		l.Item(item)
+		isPrimary := e.Name() == primary
+		if isPrimary {
+			primaryRow = currentRow
+		}
+		t.Row(cSprint(isPrimary, "y", "n"), e.Name(), meta.Author, targetsToNameList(meta.ExpandTargets()))
+		currentRow++
 	}
-	fmt.Println()
-	fmt.Println(l)
+	log.Debug("", "primary", primary)
+	log.Debug("", "primary", primaryRow)
+	t = t.StyleFunc(func(row, col int) lipgloss.Style {
+		style := lipgloss.NewStyle().Padding(0, 1)
+		if row == 0 {
+			style = style.Bold(true).Foreground(indigo)
+		}
+		if primaryRow != 0 && row == primaryRow {
+			style = style.Italic(true).Foreground(fuchsia)
+		}
+		return style
+	})
+
+	fmt.Println(t)
 	return nil
 }
 
-type listItem struct {
-	title       string
-	description string
-	modules     []string
-}
-
-func (l listItem) String() string {
-	titleStyle := lipgloss.NewStyle().Bold(true)
-	descStyle := lipgloss.NewStyle().Italic(true)
-	if len(l.modules) == 0 {
-		return lipgloss.JoinVertical(0,
-			titleStyle.Render(l.title),
-			descStyle.Render(l.description),
-		)
-	}
-	return lipgloss.JoinVertical(0,
-		titleStyle.Render(l.title),
-		descStyle.Render(l.description),
-		renderBoxRow(l.modules, lipgloss.NormalBorder()),
-	)
-}
-
-func renderBoxRow(items []string, border lipgloss.Border) string {
-	var b strings.Builder
-
-	b.WriteString(border.TopLeft)
-	for i, item := range items {
-		if i != 0 {
-			b.WriteString(border.MiddleTop)
+func targetsToNameList(targets []manifest.ConfigTarget) string {
+	var s strings.Builder
+	for i, t := range targets {
+		name := filepath.Base(t.Src)
+		if i > 0 {
+			s.WriteString(", ")
 		}
-		b.WriteString(strings.Repeat(border.Top, len(item)))
+		s.WriteString(name)
 	}
-	b.WriteString(border.TopRight + "\n")
-	for _, item := range items {
-		b.WriteString(border.Left)
-		b.WriteString(item)
-	}
-	b.WriteString(border.Right + "\n")
-	b.WriteString(border.BottomLeft)
-	for i, item := range items {
-		if i != 0 {
-			b.WriteString(border.MiddleBottom)
-		}
-		b.WriteString(strings.Repeat(border.Top, len(item)))
-	}
-	b.WriteString(border.BottomRight)
-	return b.String()
+	return s.String()
 }
 
-func newListItem(path string) (listItem, error) {
-	result := listItem{}
-	result.title = filepath.Base(path)
-	meta, err := manifest.ReadManifest(path)
-	if err != nil {
-		return listItem{}, err
+func cSprint(cond bool, ifTrue, ifFalse string) string {
+	if cond {
+		return ifTrue
 	}
-	result.description = "by " + meta.Author
-	result.modules = make([]string, 0, len(meta.Targets))
-	for _, t := range meta.Targets {
-		result.modules = append(result.modules, filepath.Base(t.Src))
-	}
-	return result, nil
+	return ifFalse
 }
 
 func init() {
