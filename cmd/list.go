@@ -22,6 +22,10 @@ var listCmd = &cobra.Command{
 }
 
 func listFn(cmd *cobra.Command, args []string) error {
+	var (
+		indigo  = lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"}
+		fuchsia = lipgloss.Color("#F780E2")
+	)
 	entries, err := os.ReadDir(dotstashPath)
 	if err != nil {
 		return err
@@ -40,7 +44,14 @@ func listFn(cmd *cobra.Command, args []string) error {
 			log.Error("failed to write to config", "error", err)
 		}
 	}
-	t := table.New().Border(lipgloss.NormalBorder()).Headers("Primary", "Name", "Author", "Modules")
+	t := table.New().
+		Border(lipgloss.HiddenBorder()).
+		BorderStyle(lipgloss.NewStyle().Foreground(indigo)).
+		BorderColumn(false).
+		BorderHeader(false).
+		Headers("Primary", "Name", "Author", "Modules")
+	var primaryRow int
+	currentRow := 1
 	for _, e := range entries {
 		p := filepath.Join(dotstashPath, e.Name())
 		meta, err := manifest.ReadManifest(p)
@@ -48,10 +59,27 @@ func listFn(cmd *cobra.Command, args []string) error {
 			log.Error("failed to get metadata, skipping...", "path", p, "error", err)
 			continue
 		}
-		t.Row(fmt.Sprint(e.Name() == primary), e.Name(), meta.Author, targetsToNameList(meta.ExpandTargets()))
+		isPrimary := e.Name() == primary
+		if isPrimary {
+			primaryRow = currentRow
+		}
+		t.Row(cSprint(isPrimary, "y", "n"), e.Name(), meta.Author, targetsToNameList(meta.ExpandTargets()))
+		currentRow++
 	}
-	fmt.Println(t)
 	log.Debug("", "primary", primary)
+	log.Debug("", "primary", primaryRow)
+	t = t.StyleFunc(func(row, col int) lipgloss.Style {
+		style := lipgloss.NewStyle().Padding(0, 1)
+		if row == 0 {
+			style = style.Bold(true).Foreground(indigo)
+		}
+		if primaryRow != 0 && row == primaryRow {
+			style = style.Italic(true).Foreground(fuchsia)
+		}
+		return style
+	})
+
+	fmt.Println(t)
 	return nil
 }
 
@@ -65,6 +93,13 @@ func targetsToNameList(targets []manifest.ConfigTarget) string {
 		s.WriteString(name)
 	}
 	return s.String()
+}
+
+func cSprint(cond bool, ifTrue, ifFalse string) string {
+	if cond {
+		return ifTrue
+	}
+	return ifFalse
 }
 
 func init() {
