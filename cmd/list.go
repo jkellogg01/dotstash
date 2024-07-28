@@ -45,10 +45,10 @@ func listFn(cmd *cobra.Command, args []string) error {
 		}
 	}
 	t := table.New().
-		Border(lipgloss.HiddenBorder()).
+		Border(lipgloss.NormalBorder()).
 		BorderStyle(lipgloss.NewStyle().Foreground(indigo)).
 		BorderColumn(false).
-		BorderHeader(false).
+		// BorderHeader(false).
 		Headers("Primary", "Name", "Author", "Modules")
 	var primaryRow int
 	currentRow := 1
