@@ -80,22 +80,15 @@ func createConfigDir(name string) (string, error) {
 	newCfgPath := filepath.Join(figRoot, name)
 	err = os.Mkdir(newCfgPath, 0o700)
 	if errors.Is(err, fs.ErrExist) {
-		log.Infof("directory '%s' already exists. backing up and replacing...", newCfgPath)
+		log.Infof("directory '%s' already exists.", newCfgPath)
 		i := 0
-		backupPath := fmt.Sprintf("%s_backup_%04d", newCfgPath, i)
-		err = os.Rename(newCfgPath, backupPath)
 		for errors.Is(err, fs.ErrExist) {
-			i++
-			backupPath = fmt.Sprintf("%s_backup_%04d", newCfgPath, i)
-			err = os.Rename(newCfgPath, backupPath)
+			newCfgPath = filepath.Join(figRoot,
+				fmt.Sprintf("%s_%03d", name, i))
+			err = os.Mkdir(newCfgPath, 0o700)
 		}
 		if err != nil {
-			log.Error("failed to create backup", "error", err)
-			return "", err
-		}
-		err = os.Mkdir(newCfgPath, 0o700)
-		if err != nil {
-			log.Error("failed to create new config dir", "error", err)
+			log.Error("failed to create new config directory under an alternate name", "error", err)
 			return "", err
 		}
 	} else if err != nil {
