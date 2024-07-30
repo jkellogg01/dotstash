@@ -81,6 +81,22 @@ func ReadManifest(path string) (*ConfigMetadata, error) {
 	return result, nil
 }
 
+func (d ConfigMetadata) Link(clobber bool) error {
+	var err error
+	for _, t := range d.ExpandTargets() {
+		err = errors.Join(err, files.Link(t.Src, t.Dst, clobber))
+	}
+	return err
+}
+
+func (d ConfigMetadata) Unlink() error {
+	var err error
+	for _, t := range d.ExpandTargets() {
+		err = errors.Join(err, files.Unlink(t.Dst))
+	}
+	return err
+}
+
 // RemoveTarget takes the basename of the target as it appears in the config repository.
 func (d *ConfigMetadata) RemoveTarget(base string) {
 	targets := d.ExpandTargets()
