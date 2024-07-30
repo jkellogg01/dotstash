@@ -10,7 +10,13 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-var ErrNoClobber error
+type ErrNoClobber struct {
+	path string
+}
+
+func (e ErrNoClobber) Error() string {
+	return fmt.Sprintf("encountered a file or directory at %s, with clobbering disabled")
+}
 
 func GetDotstashPath() (string, error) {
 	homeDir, err := os.UserHomeDir()
@@ -90,7 +96,7 @@ func Link(src, dst string, clobber bool) error {
 		if err != nil {
 			return err
 		} else if !clobber && (dfi.IsDir() || dfi.Mode().IsRegular()) {
-			return ErrNoClobber
+			return ErrNoClobber{dst}
 		}
 	}
 	err := os.Remove(dst)
@@ -102,4 +108,13 @@ func Link(src, dst string, clobber bool) error {
 }
 
 func Unlink(dst string) error {
+	dfi, err := os.Stat(dst)
+	if errors.Is(err, fs.ErrNotExist) {
+		// successfully deleted nothing. Everybody's happy!
+		return nil
+	}
+	if dfi.IsDir() || dfi.Mode().IsRegular() {
+		return fmt.Errorf("%s does not appear to be a link...", dst)
+	}
+	return os.Remove(dst)
 }
