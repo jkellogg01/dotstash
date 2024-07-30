@@ -93,6 +93,7 @@ func (d *ConfigMetadata) RemoveTarget(base string) {
 	d.Targets = targets
 }
 
+// THIS IS ALMOST ALWAYS THE CORRECT WAY TO READ A MANIFEST'S TARGETS
 func (d ConfigMetadata) ExpandTargets() []ConfigTarget {
 	result := make([]ConfigTarget, 0, len(d.Targets))
 	for _, t := range d.Targets {
