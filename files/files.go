@@ -2,12 +2,21 @@ package files
 
 import (
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"path/filepath"
 
 	"github.com/charmbracelet/log"
 )
+
+type ErrNoClobber struct {
+	path string
+}
+
+func (e ErrNoClobber) Error() string {
+	return fmt.Sprintf("encountered a file or directory at %s, with clobbering disabled")
+}
 
 func GetDotstashPath() (string, error) {
 	homeDir, err := os.UserHomeDir()
@@ -79,4 +88,33 @@ func SubstituteForSymlink(src, dst string) error {
 		log.Errorf("failed to restore %s from backup. backup is located at: %s", src, backup)
 	}
 	return err
+}
+
+func Link(src, dst string, clobber bool) error {
+	if dfi, err := os.Stat(dst); !errors.Is(err, fs.ErrNotExist) {
+		// here the file DEFINITELY EXISTS
+		if err != nil {
+			return err
+		} else if !clobber && (dfi.IsDir() || dfi.Mode().IsRegular()) {
+			return ErrNoClobber{dst}
+		}
+	}
+	err := os.Remove(dst)
+	// NOTE: os.Remove never returns fs.ErrNotExist
+	if err != nil {
+		return err
+	}
+	return os.Symlink(src, dst)
+}
+
+func Unlink(dst string) error {
+	dfi, err := os.Stat(dst)
+	if errors.Is(err, fs.ErrNotExist) {
+		// successfully deleted nothing. Everybody's happy!
+		return nil
+	}
+	if dfi.IsDir() || dfi.Mode().IsRegular() {
+		return fmt.Errorf("%s does not appear to be a link...", dst)
+	}
+	return os.Remove(dst)
 }
