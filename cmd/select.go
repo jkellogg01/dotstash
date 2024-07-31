@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/viper"
 )
 
-var clobber bool
+var clobber, unlink bool
 
 var selectCmd = &cobra.Command{
 	Use:   "select <repo>",
@@ -24,6 +24,9 @@ func selectFn(cmd *cobra.Command, args []string) error {
 	if primary == args[0] {
 		log.Infof("%s is already your primary configuration!", primary)
 		return nil
+	}
+	if unlink {
+		unlinkRepo(filepath.Join(dotstashPath, primary))
 	}
 	path := filepath.Join(dotstashPath, args[0])
 	meta, err := manifest.ReadManifest(path)
@@ -39,8 +42,20 @@ func selectFn(cmd *cobra.Command, args []string) error {
 	return nil
 }
 
+func unlinkRepo(path string) {
+	meta, err := manifest.ReadManifest(path)
+	if err != nil {
+		log.Error("failed to unlink config", "path", path, "error", err)
+	}
+	err = meta.Unlink()
+	if err != nil {
+		log.Error("failed to unlink config", "path", path, "error", err)
+	}
+}
+
 func init() {
 	rootCmd.AddCommand(selectCmd)
 
 	selectCmd.Flags().BoolVarP(&clobber, "clobber", "c", false, "delete potentially non-symlink files when replacing them with configuration data from this repository")
+	selectCmd.Flags().BoolVarP(&unlink, "unlink", "u", true, "unlink configuration files provided by the old repository")
 }
