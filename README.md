@@ -11,7 +11,7 @@ a go program for managing dotfiles conveniently
 - [x] depend[^1] command to add a config file or directory to a repository
 - [x] obviate[^1] command to remove a config file or directory from a repository
 - [x] list command to list all config repositories
-- [ ] select command to select a 'primary' config and link the config files from it
+- [x] select command to select a 'primary' config and link the config files from it
 - [ ] get command to download a remote repository and, if possible, resolve targets
 - [ ] style/terminology pass:
   - [ ] strong definition of commonly-used terminology

@@ -29,6 +29,8 @@ const (
 
 type ConfigMetadata struct {
 	Author  string         `json:"author"`
+	URL     string         `json:"url"`
+	Branch  string         `json:"branch"`
 	Targets []ConfigTarget `json:"targets"`
 }
 
@@ -206,15 +208,15 @@ func init() {
 	var err error
 	dotstashPath, err = files.GetDotstashPath()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	configPath, err = os.UserConfigDir()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	homePath, err = os.UserHomeDir()
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
 
