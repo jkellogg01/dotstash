@@ -1,7 +1,6 @@
 package git
 
 import (
-	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -10,7 +9,7 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-func Download(url, branch, alias string) error {
+func Download(url, branch, dst string) error {
 	args := []string{
 		"clone",
 		"--depth=1",
@@ -19,12 +18,12 @@ func Download(url, branch, alias string) error {
 		args = append(args, "--branch="+branch)
 	}
 	args = append(args, url)
-	if alias != "" {
-		args = append(args, alias)
+	if dst != "" {
+		args = append(args, dst)
 	}
 	cmd := exec.Command("git", args...)
 	output, err := cmd.CombinedOutput()
-	log.Debug("", "output", output)
+	log.Debug("", "output", string(output))
 	return err
 }
 
@@ -59,10 +58,10 @@ func InitRepo(path string) error {
 	}
 	cmd := exec.Command("git", "init")
 	log.Debugf("running command %s", cmd.String())
-	buf, err := cmd.CombinedOutput()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return err
 	}
-	log.Debug("", "output", buf)
+	log.Debug("", "output", string(output))
 	return os.Chdir(wd)
 }
