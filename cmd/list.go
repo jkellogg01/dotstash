@@ -56,7 +56,8 @@ func listFn(cmd *cobra.Command, args []string) error {
 		p := filepath.Join(dotstashPath, e.Name())
 		meta, err := manifest.ReadManifest(p)
 		if err != nil {
-			log.Error("failed to get metadata, skipping...", "path", p, "error", err)
+			log.Error("failed to get metadata", "path", p, "error", err)
+			t.Row("n/a", e.Name(), "n/a", "n/a")
 			continue
 		}
 		isPrimary := e.Name() == primary
