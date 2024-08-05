@@ -10,10 +10,7 @@ import (
 )
 
 func Download(url, branch, dst string) error {
-	args := []string{
-		"clone",
-		"--depth=1",
-	}
+	args := []string{"clone"}
 	if branch != "" {
 		args = append(args, "--branch="+branch)
 	}

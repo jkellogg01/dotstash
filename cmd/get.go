@@ -23,6 +23,8 @@ var getCmd = &cobra.Command{
 
 func getFn(cmd *cobra.Command, args []string) error {
 	if strings.HasPrefix(args[0], "git@") {
+		// TODO: might have to make some changes here to support ssh cloning, so that people can still make commits to their own repositories.
+		// the solution for now will just be to manually ssh clone dotfile repositories.
 		return errors.New("please use the http url to the repository!")
 	}
 	t, _ := strings.CutSuffix(args[0], ".git")
