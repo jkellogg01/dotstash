@@ -2,13 +2,16 @@ package cmd
 
 import (
 	"errors"
+	"io/fs"
 	"net/url"
 	"path"
 	"path/filepath"
 	"strings"
 
+	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/log"
 	"github.com/jkellogg01/dotstash/git"
+	"github.com/jkellogg01/dotstash/manifest"
 	"github.com/spf13/cobra"
 )
 
@@ -40,6 +43,28 @@ func getFn(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	log.Infof("successfully cloned %s into %s!", src.String(), target)
+	_, err = manifest.ReadManifest(target)
+	if errors.Is(err, fs.ErrNotExist) {
+		log.Warn("the downloaded repository does not contain a manifest.json; it will need one before it can be used with dotstash!")
+		return nil
+	}
+	// TODO: prompt user about setting this repo as primary
+	c := huh.NewConfirm().Title("Would you like to set this repo as your primary source for configuration files?")
+	err = c.Run()
+	if err != nil {
+		log.Error("failed to run confirm prompt, exiting", "error", err)
+		return nil
+	}
+	setPrimary, ok := c.GetValue().(bool)
+	if !ok {
+		panic("confirm field did not return a bool value")
+	}
+	if !setPrimary {
+		log.Info("Job's done!")
+		return nil
+	}
+	// TODO: set repo as primary
+	log.Info("TODO: set repo as primary")
 	return nil
 }
 
