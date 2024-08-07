@@ -16,7 +16,7 @@ import (
 var repoName string
 
 var plantCmd = &cobra.Command{
-	Use:  "plant [-r repository] path...",
+	Use:  "plant path...",
 	RunE: plantFunc,
 	Args: cobra.MinimumNArgs(1),
 }
@@ -30,7 +30,7 @@ func plantFunc(cmd *cobra.Command, args []string) error {
 	if repoName == "" {
 		repoName = viper.GetString("primary_config")
 		if repoName == "" {
-			return errors.New("no repository specified, and no primary repository")
+			return errors.New("no garden specified, and no primary garden")
 		}
 	}
 	for _, e := range repos {
@@ -40,7 +40,7 @@ func plantFunc(cmd *cobra.Command, args []string) error {
 		}
 	}
 	if target == nil {
-		return fmt.Errorf("%s is not in your current list of repositories!", repoName)
+		return fmt.Errorf("%s is not in your current list of garden!", repoName)
 	}
 	wd, err := os.Getwd()
 	if err != nil {
@@ -74,5 +74,5 @@ func plantFunc(cmd *cobra.Command, args []string) error {
 func init() {
 	rootCmd.AddCommand(plantCmd)
 
-	plantCmd.Flags().StringVarP(&repoName, "repository", "r", "", "the repository to add the flower to")
+	plantCmd.Flags().StringVarP(&repoName, "garden", "g", "", "the garden to add the flower to")
 }
