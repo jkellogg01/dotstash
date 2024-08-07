@@ -11,11 +11,11 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var cleanCmd = &cobra.Command{
-	Use:   "clean",
-	Short: "[WARNING] DEVELOPMENT ONLY! clean will remove ALL of your stored dotstash directories.",
+var torchCmd = &cobra.Command{
+	Use:   "torch",
+	Short: "[WARNING] DEVELOPMENT ONLY! torch will remove ALL of your stored dotstash directories.",
 	Long: `[WARNING] THIS IS A DEVELOPER TOOL! IT IS NOT RECOMMENDED THAT YOU _EVER_ USE THIS COMMAND IN PRODUCTION [WARNING]
-	clean will delete dotstash's root directory and everything inside it. This is intended to make repeated teasting of the program more convenient and is not recommended for dotstash users under any circumstances.`,
+	torch will delete dotstash's root directory and everything inside it. This is intended to make repeated teasting of the program more convenient and is not recommended for dotstash users under any circumstances.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		root, err := files.GetDotstashPath()
 		if err != nil {
@@ -38,7 +38,7 @@ var cleanCmd = &cobra.Command{
 			return err
 		}
 		if !confirm {
-			log.Info("clean cancelled.")
+			log.Info("torch cancelled.")
 		}
 		for _, file := range files {
 			name := path.Join(root, file.Name())
@@ -53,5 +53,5 @@ var cleanCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(cleanCmd)
+	rootCmd.AddCommand(torchCmd)
 }
