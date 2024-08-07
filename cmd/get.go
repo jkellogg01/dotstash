@@ -63,6 +63,7 @@ func getFn(cmd *cobra.Command, args []string) error {
 		return nil
 	}
 	meta.Link(false)
+	log.Infof("Successfully set %s as your primary configuration!", target)
 	return nil
 }
 
