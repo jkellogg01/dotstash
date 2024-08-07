@@ -40,7 +40,7 @@ func plantFunc(cmd *cobra.Command, args []string) error {
 		}
 	}
 	if target == nil {
-		return fmt.Errorf("%s is not in your current list of garden!", repoName)
+		return fmt.Errorf("%s is not in your current list of gardens!", repoName)
 	}
 	wd, err := os.Getwd()
 	if err != nil {

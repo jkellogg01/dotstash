@@ -16,7 +16,7 @@ import (
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "lists all stored configuration repositories.",
+	Short: "lists all stored configuration gardens.",
 	RunE:  listFn,
 	Args:  cobra.NoArgs,
 }

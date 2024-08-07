@@ -19,7 +19,7 @@ var branch string
 
 var getCmd = &cobra.Command{
 	Use:   "get [--branch branchname] url",
-	Short: "clones the repository at the specified url for use as a dotstash configuration",
+	Short: "clones the repository at the specified url for use as a dotstash garden",
 	RunE:  getFn,
 	Args:  cobra.ExactArgs(1),
 }

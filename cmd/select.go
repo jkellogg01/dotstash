@@ -56,6 +56,6 @@ func unlinkRepo(path string) {
 func init() {
 	rootCmd.AddCommand(selectCmd)
 
-	selectCmd.Flags().BoolVarP(&clobber, "clobber", "c", false, "delete potentially non-symlink files when replacing them with configuration data from this repository")
-	selectCmd.Flags().BoolVarP(&unlink, "unlink", "u", true, "unlink configuration files provided by the old repository")
+	selectCmd.Flags().BoolVarP(&clobber, "clobber", "c", false, "delete potentially non-symlink files when replacing garden with configuration data from this garden")
+	selectCmd.Flags().BoolVarP(&unlink, "unlink", "u", true, "unlink configuration files provided by the old garden")
 }
