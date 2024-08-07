@@ -43,12 +43,11 @@ func getFn(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	log.Infof("successfully cloned %s into %s!", src.String(), target)
-	_, err = manifest.ReadManifest(target)
+	meta, err := manifest.ReadManifest(target)
 	if errors.Is(err, fs.ErrNotExist) {
 		log.Warn("the downloaded repository does not contain a manifest.json; it will need one before it can be used with dotstash!")
 		return nil
 	}
-	// TODO: prompt user about setting this repo as primary
 	c := huh.NewConfirm().Title("Would you like to set this repo as your primary source for configuration files?")
 	err = c.Run()
 	if err != nil {
@@ -63,8 +62,7 @@ func getFn(cmd *cobra.Command, args []string) error {
 		log.Info("Job's done!")
 		return nil
 	}
-	// TODO: set repo as primary
-	log.Info("TODO: set repo as primary")
+	meta.Link(false)
 	return nil
 }
 
