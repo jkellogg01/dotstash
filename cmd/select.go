@@ -45,11 +45,11 @@ func selectFn(cmd *cobra.Command, args []string) error {
 func unlinkRepo(path string) {
 	meta, err := manifest.ReadManifest(path)
 	if err != nil {
-		log.Error("failed to unlink config", "path", path, "error", err)
+		log.Error("failed to unlink flower", "path", path, "error", err)
 	}
 	err = meta.Unlink()
 	if err != nil {
-		log.Error("failed to unlink config", "path", path, "error", err)
+		log.Error("failed to unlink flower", "path", path, "error", err)
 	}
 }
 
