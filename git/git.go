@@ -1,7 +1,6 @@
 package git
 
 import (
-	"bytes"
 	"io"
 	"os"
 	"os/exec"
@@ -9,6 +8,21 @@ import (
 
 	"github.com/charmbracelet/log"
 )
+
+func Download(url, branch, dst string) error {
+	args := []string{"clone"}
+	if branch != "" {
+		args = append(args, "--branch="+branch)
+	}
+	args = append(args, url)
+	if dst != "" {
+		args = append(args, dst)
+	}
+	cmd := exec.Command("git", args...)
+	output, err := cmd.CombinedOutput()
+	log.Debug("", "output", string(output))
+	return err
+}
 
 func CheckGitInstalled() (string, error) {
 	cmd := exec.Command("git", "--version")
@@ -40,14 +54,11 @@ func InitRepo(path string) error {
 		return err
 	}
 	cmd := exec.Command("git", "init")
-	buf := new(bytes.Buffer)
-	cmd.Stdout = buf
-	cmd.Stderr = buf
 	log.Debugf("running command %s", cmd.String())
-	err = cmd.Run()
+	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return err
 	}
-	log.Debug("", "output", buf.String())
+	log.Debug("", "output", string(output))
 	return os.Chdir(wd)
 }

@@ -74,11 +74,11 @@ func ReadManifest(path string) (*ConfigMetadata, error) {
 		return nil, err
 	}
 	result, err := readJson(srcFile)
-	if err := srcFile.Close(); err != nil {
-		log.Errorf("failed to close manifest file after reading: %s", err)
-	}
 	if err != nil {
 		return nil, err
+	}
+	if err := srcFile.Close(); err != nil {
+		log.Errorf("failed to close manifest file after reading: %s", err)
 	}
 	return result, nil
 }
