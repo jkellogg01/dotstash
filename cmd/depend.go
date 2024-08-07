@@ -15,14 +15,13 @@ import (
 
 var repoName string
 
-var dependCmd = &cobra.Command{
-	Use:     "depend [-r repository] path...",
-	Aliases: []string{"add-config"},
-	RunE:    dependFunc,
-	Args:    cobra.MinimumNArgs(1),
+var plantCmd = &cobra.Command{
+	Use:  "plant [-r repository] path...",
+	RunE: plantFunc,
+	Args: cobra.MinimumNArgs(1),
 }
 
-func dependFunc(cmd *cobra.Command, args []string) error {
+func plantFunc(cmd *cobra.Command, args []string) error {
 	repos, err := os.ReadDir(dotstashPath)
 	if err != nil {
 		return err
@@ -73,7 +72,7 @@ func dependFunc(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	rootCmd.AddCommand(dependCmd)
+	rootCmd.AddCommand(plantCmd)
 
-	dependCmd.Flags().StringVarP(&repoName, "repository", "r", "", "the repository to add the dependency to")
+	plantCmd.Flags().StringVarP(&repoName, "repository", "r", "", "the repository to add the flower to")
 }
