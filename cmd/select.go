@@ -13,8 +13,8 @@ import (
 var clobber, unlink bool
 
 var selectCmd = &cobra.Command{
-	Use:   "select <repo>",
-	Short: "A brief description of your command",
+	Use:   "select <garden>",
+	Short: "select a garden from which to source your configuration files",
 	RunE:  selectFn,
 	Args:  cobra.MinimumNArgs(1),
 }
@@ -22,7 +22,7 @@ var selectCmd = &cobra.Command{
 func selectFn(cmd *cobra.Command, args []string) error {
 	primary := viper.GetString("primary_config")
 	if primary == args[0] {
-		log.Infof("%s is already your primary configuration!", primary)
+		log.Infof("%s is already your primary garden!", primary)
 		return nil
 	}
 	if unlink {
@@ -56,6 +56,6 @@ func unlinkRepo(path string) {
 func init() {
 	rootCmd.AddCommand(selectCmd)
 
-	selectCmd.Flags().BoolVarP(&clobber, "clobber", "c", false, "delete potentially non-symlink files when replacing garden with configuration data from this garden")
-	selectCmd.Flags().BoolVarP(&unlink, "unlink", "u", true, "unlink configuration files provided by the old garden")
+	selectCmd.Flags().BoolVarP(&clobber, "clobber", "c", false, "delete potentially non-flower files when switching to the new garden")
+	selectCmd.Flags().BoolVarP(&unlink, "unlink", "u", true, "unlink flowers provided by the old garden")
 }
