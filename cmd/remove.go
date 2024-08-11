@@ -16,9 +16,10 @@ var (
 )
 
 var removeCmd = &cobra.Command{
-	Use:  "remove name",
-	Args: cobra.ExactArgs(1),
-	RunE: removeFn,
+	Use:   "remove name",
+	Short: "remove the specified garden from the stored set of gardens, restoring the flowers therein to their proper locations if the selected garden was the primary garden",
+	Args:  cobra.ExactArgs(1),
+	RunE:  removeFn,
 }
 
 func removeFn(cmd *cobra.Command, args []string) error {

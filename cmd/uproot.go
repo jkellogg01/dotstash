@@ -17,6 +17,7 @@ import (
 var uprootCmd = &cobra.Command{
 	Use:     "uproot",
 	Aliases: []string{"deplant"},
+	Short:   "removes the specified flower from the primary garden, or a specified garden",
 	RunE:    uprootFn,
 	Args:    cobra.MinimumNArgs(1),
 }

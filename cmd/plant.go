@@ -16,9 +16,10 @@ import (
 var repoName string
 
 var plantCmd = &cobra.Command{
-	Use:  "plant path...",
-	RunE: plantFunc,
-	Args: cobra.MinimumNArgs(1),
+	Use:   "plant path...",
+	Short: "adds the specified flower to the primary garden, or a specified garden",
+	RunE:  plantFunc,
+	Args:  cobra.MinimumNArgs(1),
 }
 
 func plantFunc(cmd *cobra.Command, args []string) error {
