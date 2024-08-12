@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -13,26 +14,30 @@ var targetGarden string
 
 // gitCmd represents the git command
 var gitCmd = &cobra.Command{
-	Use:   "git [--garden=<garden name>] command...",
-	Short: "a wrapper around git commands, which executes them in the primary or specified garden.",
-	RunE:  gitFn,
-	Args:  cobra.MinimumNArgs(1),
+	Use:                   "git [--garden=<garden name>] command...",
+	Short:                 "a wrapper around git commands, which executes them in the primary or specified garden.",
+	RunE:                  gitFn,
+	Args:                  cobra.MinimumNArgs(1),
+	DisableFlagParsing:    true,
+	DisableFlagsInUseLine: true,
 }
 
 func gitFn(cmd *cobra.Command, args []string) error {
+	log.Printf("%v", args)
+	// TODO: manually parse for the garden or help flags
 	repos, err := os.ReadDir(dotstashPath)
 	if err != nil {
 		return err
 	}
 	var target os.DirEntry
-	if repoName == "" {
+	if targetGarden == "" {
 		if n := viper.GetString("primary_config"); n != "" {
-			repoName = n
+			targetGarden = n
 		}
 		return errors.New("no garden specified, and no primary garden")
 	}
 	for _, e := range repos {
-		if e.Name() == repoName {
+		if e.Name() == targetGarden {
 			target = e
 			break
 		}
@@ -47,5 +52,5 @@ func gitFn(cmd *cobra.Command, args []string) error {
 func init() {
 	rootCmd.AddCommand(gitCmd)
 
-	gitCmd.Flags().StringVarP(&targetGarden, "garden", "g", "", "the garden in which to execute the specified git command")
+	gitCmd.Flags().StringP("garden", "g", "", "the garden in which to execute the specified git command")
 }
