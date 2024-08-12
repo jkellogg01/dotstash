@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
@@ -24,7 +25,26 @@ var gitCmd = &cobra.Command{
 
 func gitFn(cmd *cobra.Command, args []string) error {
 	log.Printf("%v", args)
-	// TODO: manually parse for the garden or help flags
+	// HACK: this is horrible; there must be a better way
+	switch {
+	case args[0] == "--garden" || args[0] == "-g":
+		targetGarden = args[1]
+		args = args[2:]
+		err := cmd.Args(cmd, args)
+		if err != nil {
+			return err
+		}
+	case strings.HasPrefix(args[0], "--garden="):
+		t, _ := strings.CutPrefix(args[0], "--garden=")
+		targetGarden = t
+		args = args[1:]
+		err := cmd.Args(cmd, args)
+		if err != nil {
+			return err
+		}
+	case args[0] == "--help" || args[0] == "-h":
+		return cmd.Help()
+	}
 	repos, err := os.ReadDir(dotstashPath)
 	if err != nil {
 		return err
