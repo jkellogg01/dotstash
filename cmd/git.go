@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/log"
@@ -51,10 +52,12 @@ func gitFn(cmd *cobra.Command, args []string) error {
 	}
 	var target os.DirEntry
 	if targetGarden == "" {
-		if n := viper.GetString("primary_config"); n != "" {
-			targetGarden = n
+		n := viper.GetString("primary_config")
+		log.Debugf("viper primary_config: %s", n)
+		if n == "" {
+			return errors.New("no garden specified, and no primary garden")
 		}
-		return errors.New("no garden specified, and no primary garden")
+		targetGarden = n
 	}
 	for _, e := range repos {
 		if e.Name() == targetGarden {
@@ -63,9 +66,15 @@ func gitFn(cmd *cobra.Command, args []string) error {
 		}
 	}
 	if target == nil {
-		return fmt.Errorf("%s is not in your current list of gardens!", repoName)
+		return fmt.Errorf("%s is not in your current list of gardens!", targetGarden)
 	}
 	// TODO: cd into the specified garden and execute the provided git command
+	targetPath := filepath.Join(dotstashPath, targetGarden)
+	err = os.Chdir(targetPath)
+	if err != nil {
+		log.Error(err)
+		return nil
+	}
 	return nil
 }
 

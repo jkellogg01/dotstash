@@ -74,18 +74,19 @@ func initConfig() {
 	viper.SetConfigName("dotstash")
 
 	viper.AutomaticEnv() // read in environment variables that match
-	if os.Getenv("MODE") == "dev" {
-		all := viper.AllSettings()
-		log.Debugf("found %d config settings", len(all))
-		for k, v := range all {
-			log.Debug("%s = %v", k, v)
-		}
-	}
 
 	// If a config file is found, read it in.
 	if err := viper.ReadInConfig(); err == nil {
 		log.Debugf("Using config file: %v", viper.ConfigFileUsed())
 	} else {
 		viper.SafeWriteConfig()
+	}
+
+	if os.Getenv("MODE") == "dev" {
+		all := viper.AllSettings()
+		log.Debugf("found %d config settings", len(all))
+		for k, v := range all {
+			log.Debugf("%s = %v", k, v)
+		}
 	}
 }
