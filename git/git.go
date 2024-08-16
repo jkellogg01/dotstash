@@ -24,6 +24,13 @@ func Download(url, branch, dst string) error {
 	return err
 }
 
+func Exec(args []string) error {
+	c := exec.Command("git", args...)
+	output, err := c.CombinedOutput()
+	log.Print(string(output))
+	return err
+}
+
 func CheckGitInstalled() (string, error) {
 	cmd := exec.Command("git", "--version")
 	pipe, err := cmd.StdoutPipe()
