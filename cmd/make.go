@@ -23,7 +23,7 @@ var (
 
 var makeCmd = &cobra.Command{
 	Use:   "make [flags] [file]...",
-	Short: "set up a git repository and add config files to it",
+	Short: "initialize a configuration garden and specify flowers to add",
 	RunE:  makeFn,
 }
 
@@ -35,7 +35,7 @@ func makeFn(cmd *cobra.Command, args []string) error {
 	metadata := manifest.ConfigMetadata{
 		Author: strings.TrimSpace(author),
 	}
-	log.Info("initializing a git repository in the new directory...")
+	log.Info("initializing a git repository in the new garden...")
 	err = git.InitRepo(root)
 	if err != nil {
 		log.Error("failed to initialize git repository", "error", err)
@@ -88,25 +88,25 @@ func createConfigDir(name string) (string, error) {
 			err = os.Mkdir(newCfgPath, 0o700)
 		}
 		if err != nil {
-			log.Error("failed to create new config directory under an alternate name", "error", err)
+			log.Error("failed to create new garden under an alternate name", "error", err)
 			return "", err
 		}
 	} else if err != nil {
-		log.Error("failed to create new config dir", "error", err)
+		log.Error("failed to create new garden", "error", err)
 		return "", err
 	}
-	log.Infof("successfully created a new config dir at %s", newCfgPath)
+	log.Infof("successfully created a new garden at %s", newCfgPath)
 	return newCfgPath, nil
 }
 
 func init() {
 	rootCmd.AddCommand(makeCmd)
-	makeCmd.Flags().StringVarP(&dirName, "name", "n", "dotstash", "the name of the config directory to create")
+	makeCmd.Flags().StringVarP(&dirName, "name", "n", "dotstash", "the name of the garden to create")
 	var defaultAuthorName string
 	user, err := user.Current()
 	if err == nil {
 		defaultAuthorName = user.Username
 	}
-	makeCmd.Flags().StringVarP(&author, "author", "a", defaultAuthorName, "author name for the repository. defaults to blank if no username can be found")
+	makeCmd.Flags().StringVarP(&author, "author", "a", defaultAuthorName, "author name for the garden. defaults to blank if no username can be found")
 	// TODO: add a flag for an interactive mode when there is an interactive mode to opt into
 }

@@ -18,8 +18,8 @@ import (
 var branch string
 
 var getCmd = &cobra.Command{
-	Use:   "get [--branch branchname] url",
-	Short: "clones the repository at the specified url for use as a dotstash configuration",
+	Use:   "get [--branch=<branch name>] url",
+	Short: "clones the repository at the specified url for use as a dotstash garden",
 	RunE:  getFn,
 	Args:  cobra.ExactArgs(1),
 }
@@ -48,7 +48,7 @@ func getFn(cmd *cobra.Command, args []string) error {
 		log.Warn("the downloaded repository does not contain a manifest.json; it will need one before it can be used with dotstash!")
 		return nil
 	}
-	c := huh.NewConfirm().Title("Would you like to set this repo as your primary source for configuration files?")
+	c := huh.NewConfirm().Title("Would you like to set this garden as your primary source for configuration files?")
 	err = c.Run()
 	if err != nil {
 		log.Error("failed to run confirm prompt, exiting", "error", err)

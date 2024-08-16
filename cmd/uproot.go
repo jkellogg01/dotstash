@@ -14,14 +14,15 @@ import (
 	"github.com/spf13/viper"
 )
 
-var obviateCmd = &cobra.Command{
-	Use:     "obviate",
-	Aliases: []string{"rm-config"},
-	RunE:    obviateFn,
+var uprootCmd = &cobra.Command{
+	Use:     "uproot",
+	Aliases: []string{"deplant"},
+	Short:   "removes the specified flower from the primary garden, or a specified garden",
+	RunE:    uprootFn,
 	Args:    cobra.MinimumNArgs(1),
 }
 
-func obviateFn(cmd *cobra.Command, args []string) error {
+func uprootFn(cmd *cobra.Command, args []string) error {
 	repos, err := os.ReadDir(dotstashPath)
 	if err != nil {
 		return err
@@ -29,7 +30,7 @@ func obviateFn(cmd *cobra.Command, args []string) error {
 	if repoName == "" {
 		repoName = viper.GetString("primary_config")
 		if repoName == "" {
-			return errors.New("no repository specified, and no primary repository")
+			return errors.New("no garden specified, and no primary garden")
 		}
 	}
 	var target os.DirEntry
@@ -40,7 +41,7 @@ func obviateFn(cmd *cobra.Command, args []string) error {
 		}
 	}
 	if target == nil {
-		return fmt.Errorf("%s is not in your current list of repositories!", repoName)
+		return fmt.Errorf("%s is not in your current list of gardens!", repoName)
 	}
 	targetPath := filepath.Join(dotstashPath, target.Name())
 	metadata, err := manifest.ReadManifest(targetPath)
@@ -62,7 +63,7 @@ func obviateFn(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	rootCmd.AddCommand(obviateCmd)
+	rootCmd.AddCommand(uprootCmd)
 
-	obviateCmd.Flags().StringVarP(&repoName, "repository", "r", "", "the repository to remove the config from")
+	uprootCmd.Flags().StringVarP(&repoName, "garden", "g", "", "the garden to remove the flower(s) from")
 }

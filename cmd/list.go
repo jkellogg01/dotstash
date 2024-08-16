@@ -16,13 +16,15 @@ import (
 
 var listCmd = &cobra.Command{
 	Use:   "list",
-	Short: "lists all stored configuration repositories.",
+	Short: "lists all stored configuration gardens.",
 	RunE:  listFn,
 	Args:  cobra.NoArgs,
 }
 
 func listFn(cmd *cobra.Command, args []string) error {
 	var (
+		// NOTE: these colors are 100% jacked from charm's default color scheme,
+		// might want to set up a color scheme based on terminal colors instead?
 		indigo  = lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"}
 		fuchsia = lipgloss.Color("#F780E2")
 	)
@@ -49,7 +51,7 @@ func listFn(cmd *cobra.Command, args []string) error {
 		BorderStyle(lipgloss.NewStyle().Foreground(indigo)).
 		BorderColumn(false).
 		// BorderHeader(false).
-		Headers("Primary", "Name", "Author", "Modules")
+		Headers("Primary", "Name", "Author", "Flowers")
 	var primaryRow int
 	currentRow := 1
 	for _, e := range entries {

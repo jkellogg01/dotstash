@@ -15,7 +15,7 @@ type ErrNoClobber struct {
 }
 
 func (e ErrNoClobber) Error() string {
-	return fmt.Sprintf("encountered a file or directory at %s, with clobbering disabled")
+	return fmt.Sprintf("encountered a file or directory at %s, with clobbering disabled", e.path)
 }
 
 func GetDotstashPath() (string, error) {

@@ -13,8 +13,8 @@ import (
 var clobber, unlink bool
 
 var selectCmd = &cobra.Command{
-	Use:   "select <repo>",
-	Short: "A brief description of your command",
+	Use:   "select <garden>",
+	Short: "select a garden from which to source your configuration files",
 	RunE:  selectFn,
 	Args:  cobra.MinimumNArgs(1),
 }
@@ -22,7 +22,7 @@ var selectCmd = &cobra.Command{
 func selectFn(cmd *cobra.Command, args []string) error {
 	primary := viper.GetString("primary_config")
 	if primary == args[0] {
-		log.Infof("%s is already your primary configuration!", primary)
+		log.Infof("%s is already your primary garden!", primary)
 		return nil
 	}
 	if unlink {
@@ -45,17 +45,17 @@ func selectFn(cmd *cobra.Command, args []string) error {
 func unlinkRepo(path string) {
 	meta, err := manifest.ReadManifest(path)
 	if err != nil {
-		log.Error("failed to unlink config", "path", path, "error", err)
+		log.Error("failed to unlink flower", "path", path, "error", err)
 	}
 	err = meta.Unlink()
 	if err != nil {
-		log.Error("failed to unlink config", "path", path, "error", err)
+		log.Error("failed to unlink flower", "path", path, "error", err)
 	}
 }
 
 func init() {
 	rootCmd.AddCommand(selectCmd)
 
-	selectCmd.Flags().BoolVarP(&clobber, "clobber", "c", false, "delete potentially non-symlink files when replacing them with configuration data from this repository")
-	selectCmd.Flags().BoolVarP(&unlink, "unlink", "u", true, "unlink configuration files provided by the old repository")
+	selectCmd.Flags().BoolVarP(&clobber, "clobber", "c", false, "delete potentially non-flower files when switching to the new garden")
+	selectCmd.Flags().BoolVarP(&unlink, "unlink", "u", true, "unlink flowers provided by the old garden")
 }

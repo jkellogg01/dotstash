@@ -15,14 +15,14 @@ import (
 
 var repoName string
 
-var dependCmd = &cobra.Command{
-	Use:     "depend [-r repository] path...",
-	Aliases: []string{"add-config"},
-	RunE:    dependFunc,
-	Args:    cobra.MinimumNArgs(1),
+var plantCmd = &cobra.Command{
+	Use:   "plant path...",
+	Short: "adds the specified flower to the primary garden, or a specified garden",
+	RunE:  plantFunc,
+	Args:  cobra.MinimumNArgs(1),
 }
 
-func dependFunc(cmd *cobra.Command, args []string) error {
+func plantFunc(cmd *cobra.Command, args []string) error {
 	repos, err := os.ReadDir(dotstashPath)
 	if err != nil {
 		return err
@@ -31,7 +31,7 @@ func dependFunc(cmd *cobra.Command, args []string) error {
 	if repoName == "" {
 		repoName = viper.GetString("primary_config")
 		if repoName == "" {
-			return errors.New("no repository specified, and no primary repository")
+			return errors.New("no garden specified, and no primary garden")
 		}
 	}
 	for _, e := range repos {
@@ -41,7 +41,7 @@ func dependFunc(cmd *cobra.Command, args []string) error {
 		}
 	}
 	if target == nil {
-		return fmt.Errorf("%s is not in your current list of repositories!", repoName)
+		return fmt.Errorf("%s is not in your current list of gardens!", repoName)
 	}
 	wd, err := os.Getwd()
 	if err != nil {
@@ -73,7 +73,7 @@ func dependFunc(cmd *cobra.Command, args []string) error {
 }
 
 func init() {
-	rootCmd.AddCommand(dependCmd)
+	rootCmd.AddCommand(plantCmd)
 
-	dependCmd.Flags().StringVarP(&repoName, "repository", "r", "", "the repository to add the dependency to")
+	plantCmd.Flags().StringVarP(&repoName, "garden", "g", "", "the garden to add the flower to")
 }
