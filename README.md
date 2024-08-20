@@ -31,7 +31,9 @@ There are plans to fix this with an interactive TUI in the near future, but in t
 
 Don't be stupid.
 Don't trust a stranger's software with data you can't afford to lose or accidentally share.
-That's about it, glhf! <3
+That's about it.
+
+GLHF! <3
 
 ## A Note on Terminology
 
@@ -39,8 +41,8 @@ Throughout this document as well as the help menu for many of the commands, you 
 This is by design, as many elements of your Dotstash configuration will be strikingly similar to concepts you're already familiar with if you're sufficiently comfortable with git and with navigating filesystems, especially in the terminal.
 As such, gardening terminology has been borrowed to clearly distinguish the nuanced elements of Dotstash from their native analogues.
 
-- **Garden**s encompass a _collection_ of configuration files. A garden is confined to a single branch of a single git repository. Dotstash provides the tools to interact with the underlying git repository from anywhere, so you don't even need to go find where we keep them (they should be in a directory called `.dotstash` inside of your home directory)!
-- **Flower**s refer to the set of configuration files for _a single application_. It may just be `~/.zshrc`, or it may be your whole `~/.config/nvim` directory; both of these are **Flower**s as far as Dotstash is concerned.
+- **Gardens** encompass a _collection_ of configuration files. A garden is confined to a single branch of a single git repository. Dotstash provides the tools to interact with the underlying git repository from anywhere, so you don't even need to go find where we keep them (they should be in a directory called `.dotstash` inside of your home directory)!
+- **Flowers** refer to the set of configuration files for _a single application_. It may just be `~/.zshrc`, or it may be your whole `~/.config/nvim` directory; both of these are **Flowers** as far as Dotstash is concerned.
 
 Understanding this will make commands such as `dotstash plant ~/.config/wezterm` or `dotstash uproot neofetch` (forever in our hearts) entirely sensible and easy to distinguish from typical filesystem commands.
 
