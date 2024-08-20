@@ -90,18 +90,13 @@ func makeFn(cmd *cobra.Command, args []string) error {
 }
 
 func gardenInitialCommit(dir string) error {
-	err := os.Chdir(dir)
-	if err != nil {
-		log.Warn("failed to cd into garden directory", "error", err)
-		return nil
-	}
 	log.Info("Creating initial commit...", "location", dir)
-	err = git.Exec([]string{"add", "."})
+	err := git.Exec(dir, "add", ".")
 	if err != nil {
 		log.Warn("failed to execute 'git add .'", "error", err)
 		return nil
 	}
-	err = git.Exec([]string{"commit", "--message=initial commit\r\n\r\nwith love from Dotstash"})
+	err = git.Exec(dir, "commit", "--message=initial commit\r\n\r\nwith love from Dotstash")
 	if err != nil {
 		log.Warn("failed to execute 'git commit --message=\"initial commit\r\n\r\nwith love from Dotstash\"", "error", err)
 		return nil

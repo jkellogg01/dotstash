@@ -24,8 +24,9 @@ func Download(url, branch, dst string) error {
 	return err
 }
 
-func Exec(args []string) error {
+func Exec(dir string, args ...string) error {
 	c := exec.Command("git", args...)
+	c.Dir = dir
 	output, err := c.CombinedOutput()
 	log.Print(string(output))
 	return err
