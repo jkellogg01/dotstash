@@ -41,7 +41,11 @@ func makeFn(cmd *cobra.Command, args []string) error {
 		log.Error("failed to initialize git repository", "error", err)
 	}
 	if len(args) == 0 {
-		metadata.EmitManifest(root)
+		err = metadata.EmitManifest(root)
+		if err != nil {
+			log.Error("failed to emit manifest")
+			return err
+		}
 		err = gardenInitialCommit(root)
 		if err != nil {
 			log.Warn(err)
