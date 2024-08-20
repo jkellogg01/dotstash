@@ -41,7 +41,15 @@ func makeFn(cmd *cobra.Command, args []string) error {
 		log.Error("failed to initialize git repository", "error", err)
 	}
 	if len(args) == 0 {
-		metadata.EmitManifest(root)
+		err = metadata.EmitManifest(root)
+		if err != nil {
+			log.Error("failed to emit manifest")
+			return err
+		}
+		err = gardenInitialCommit(root)
+		if err != nil {
+			log.Warn(err)
+		}
 		return nil
 	}
 	wd, err := os.Getwd()
@@ -67,7 +75,37 @@ func makeFn(cmd *cobra.Command, args []string) error {
 		}
 	}
 	log.Debug(metadata.ExpandTargets())
-	metadata.EmitManifest(root)
+	err = metadata.EmitManifest(root)
+	if err != nil {
+		log.Error("failed to emit manifest")
+		return err
+	}
+	log.Info("Garden successfully created!")
+	// NOTE: at this point the creation of the garden is successful, so any errors should be 'quiet'
+	err = gardenInitialCommit(root)
+	if err != nil {
+		log.Warn(err)
+	}
+	return nil
+}
+
+func gardenInitialCommit(dir string) error {
+	err := os.Chdir(dir)
+	if err != nil {
+		log.Warn("failed to cd into garden directory", "error", err)
+		return nil
+	}
+	log.Info("Creating initial commit...", "location", dir)
+	err = git.Exec([]string{"add", "."})
+	if err != nil {
+		log.Warn("failed to execute 'git add .'", "error", err)
+		return nil
+	}
+	err = git.Exec([]string{"commit", "--message=initial commit\r\n\r\nwith love from Dotstash"})
+	if err != nil {
+		log.Warn("failed to execute 'git commit --message=\"initial commit\r\n\r\nwith love from Dotstash\"", "error", err)
+		return nil
+	}
 	return nil
 }
 
