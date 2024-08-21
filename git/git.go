@@ -45,20 +45,13 @@ func CheckGitInstalled() (string, error) {
 }
 
 func InitRepo(path string) error {
-	wd, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	err = os.Chdir(path)
-	if err != nil {
-		return err
-	}
 	cmd := exec.Command("git", "init")
+	cmd.Dir = path
 	log.Debugf("running command %s", cmd.String())
 	output, err := cmd.CombinedOutput()
 	if err != nil {
 		return err
 	}
 	log.Debug("", "output", string(output))
-	return os.Chdir(wd)
+	return nil
 }
