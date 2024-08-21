@@ -4,11 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
 	"github.com/charmbracelet/log"
-	"github.com/jkellogg01/dotstash/git"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -71,24 +71,15 @@ func gitFn(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("%s is not in your current list of gardens!", targetGarden)
 	}
 	targetPath := filepath.Join(dotstashPath, targetGarden)
-	err = os.Chdir(targetPath)
-	if err != nil {
-		log.Error(err)
-		return nil
-	}
-	wd, err := os.Getwd()
-	if err != nil {
-		log.Error(err)
-		return nil
-	}
-	log.Debug(wd)
-	// BUG: I don't think this will currently work with any git commands which
-	// require follow-up input from the user (like a password or commit message)
-	err = git.Exec(args)
-	if err != nil {
-		return err
-	}
-	return nil
+	c := exec.Command(
+		"git",
+		args...,
+	)
+	c.Dir = targetPath
+	c.Stdout = os.Stdout
+	c.Stderr = os.Stderr
+	c.Stdin = os.Stdin
+	return c.Run()
 }
 
 func init() {

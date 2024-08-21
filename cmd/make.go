@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/fs"
 	"os"
+	"os/exec"
 	"os/user"
 	"path/filepath"
 	"strings"
@@ -90,18 +91,17 @@ func makeFn(cmd *cobra.Command, args []string) error {
 }
 
 func gardenInitialCommit(dir string) error {
-	err := os.Chdir(dir)
-	if err != nil {
-		log.Warn("failed to cd into garden directory", "error", err)
-		return nil
-	}
 	log.Info("Creating initial commit...", "location", dir)
-	err = git.Exec([]string{"add", "."})
+	c := exec.Command("git", "add", ".")
+	c.Dir = dir
+	err := c.Run()
 	if err != nil {
 		log.Warn("failed to execute 'git add .'", "error", err)
 		return nil
 	}
-	err = git.Exec([]string{"commit", "--message=initial commit\r\n\r\nwith love from Dotstash"})
+	c = exec.Command("git", "commit", "--message=initial commit\r\n\r\nwith love from Dotstash")
+	c.Dir = dir
+	err = c.Run()
 	if err != nil {
 		log.Warn("failed to execute 'git commit --message=\"initial commit\r\n\r\nwith love from Dotstash\"", "error", err)
 		return nil
