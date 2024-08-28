@@ -2,7 +2,6 @@ package git
 
 import (
 	"io"
-	"os"
 	"os/exec"
 	"strings"
 
