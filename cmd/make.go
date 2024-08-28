@@ -17,11 +17,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	dirName string
-	author  string
-)
-
 var makeCmd = &cobra.Command{
 	Use:   "make [flags] [file]...",
 	Short: "initialize a configuration garden and specify flowers to add",
@@ -29,6 +24,14 @@ var makeCmd = &cobra.Command{
 }
 
 func makeFn(cmd *cobra.Command, args []string) error {
+	dirName, err := cmd.Flags().GetString("name")
+	if err != nil {
+		return err
+	}
+	author, err := cmd.Flags().GetString("author")
+	if err != nil {
+		return err
+	}
 	root, err := createConfigDir(dirName)
 	if err != nil {
 		return err
@@ -139,12 +142,12 @@ func createConfigDir(name string) (string, error) {
 
 func init() {
 	rootCmd.AddCommand(makeCmd)
-	makeCmd.Flags().StringVarP(&dirName, "name", "n", "dotstash", "the name of the garden to create")
+	makeCmd.Flags().StringP("name", "n", "dotstash", "the name of the garden to create")
 	var defaultAuthorName string
 	user, err := user.Current()
 	if err == nil {
 		defaultAuthorName = user.Username
 	}
-	makeCmd.Flags().StringVarP(&author, "author", "a", defaultAuthorName, "author name for the garden. defaults to blank if no username can be found")
+	makeCmd.Flags().StringP("author", "a", defaultAuthorName, "author name for the garden. defaults to blank if no username can be found")
 	// TODO: add a flag for an interactive mode when there is an interactive mode to opt into
 }
