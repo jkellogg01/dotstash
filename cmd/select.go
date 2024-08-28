@@ -10,8 +10,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var clobber, unlink bool
-
 var selectCmd = &cobra.Command{
 	Use:   "select <garden>",
 	Short: "select a garden from which to source your configuration files",
@@ -20,6 +18,14 @@ var selectCmd = &cobra.Command{
 }
 
 func selectFn(cmd *cobra.Command, args []string) error {
+	clobber, err := cmd.Flags().GetBool("clobber")
+	if err != nil {
+		return err
+	}
+	unlink, err := cmd.Flags().GetBool("unlink")
+	if err != nil {
+		return err
+	}
 	primary := viper.GetString("primary_config")
 	if primary == args[0] {
 		log.Infof("%s is already your primary garden!", primary)
@@ -56,6 +62,6 @@ func unlinkRepo(path string) {
 func init() {
 	rootCmd.AddCommand(selectCmd)
 
-	selectCmd.Flags().BoolVarP(&clobber, "clobber", "c", false, "delete potentially non-flower files when switching to the new garden")
-	selectCmd.Flags().BoolVarP(&unlink, "unlink", "u", true, "unlink flowers provided by the old garden")
+	selectCmd.Flags().BoolP("clobber", "c", false, "delete potentially non-flower files when switching to the new garden")
+	selectCmd.Flags().BoolP("unlink", "u", true, "unlink flowers provided by the old garden")
 }
