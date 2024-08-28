@@ -15,8 +15,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var branch string
-
 var getCmd = &cobra.Command{
 	Use:   "get [--branch=<branch name>] url",
 	Short: "clones the repository at the specified url for use as a dotstash garden",
@@ -25,6 +23,10 @@ var getCmd = &cobra.Command{
 }
 
 func getFn(cmd *cobra.Command, args []string) error {
+	branch, err := cmd.Flags().GetString("branch")
+	if err != nil {
+		return err
+	}
 	if strings.HasPrefix(args[0], "git@") {
 		// TODO: might have to make some changes here to support ssh cloning, so that people can still make commits to their own repositories.
 		// the solution for now will just be to manually ssh clone dotfile repositories.
@@ -70,5 +72,5 @@ func getFn(cmd *cobra.Command, args []string) error {
 func init() {
 	rootCmd.AddCommand(getCmd)
 
-	getCmd.Flags().StringVarP(&branch, "branch", "b", "", "specify a branch to download from")
+	getCmd.Flags().StringP("branch", "b", "", "specify a branch to download from")
 }
