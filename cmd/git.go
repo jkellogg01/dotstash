@@ -13,8 +13,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var targetGarden string
-
 // gitCmd represents the git command
 var gitCmd = &cobra.Command{
 	Use:                   "git [--garden=<garden name>] command...",
@@ -28,6 +26,7 @@ var gitCmd = &cobra.Command{
 func gitFn(cmd *cobra.Command, args []string) error {
 	log.Printf("%v", args)
 	// HACK: this is horrible; there must be a better way
+	var targetGarden string
 	switch {
 	case args[0] == "--garden" || args[0] == "-g":
 		targetGarden = args[1]

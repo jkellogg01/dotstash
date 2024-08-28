@@ -13,8 +13,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-var repoName string
-
 var plantCmd = &cobra.Command{
 	Use:   "plant path...",
 	Short: "adds the specified flower to the primary garden, or a specified garden",
@@ -23,25 +21,29 @@ var plantCmd = &cobra.Command{
 }
 
 func plantFunc(cmd *cobra.Command, args []string) error {
+	garden, err := cmd.Flags().GetString("garden")
+	if err != nil {
+		return err
+	}
 	repos, err := os.ReadDir(dotstashPath)
 	if err != nil {
 		return err
 	}
 	var target os.DirEntry
-	if repoName == "" {
-		repoName = viper.GetString("primary_config")
-		if repoName == "" {
+	if garden == "" {
+		garden = viper.GetString("primary_config")
+		if garden == "" {
 			return errors.New("no garden specified, and no primary garden")
 		}
 	}
 	for _, e := range repos {
-		if e.Name() == repoName {
+		if e.Name() == garden {
 			target = e
 			break
 		}
 	}
 	if target == nil {
-		return fmt.Errorf("%s is not in your current list of gardens!", repoName)
+		return fmt.Errorf("%s is not in your current list of gardens!", garden)
 	}
 	wd, err := os.Getwd()
 	if err != nil {
@@ -75,5 +77,5 @@ func plantFunc(cmd *cobra.Command, args []string) error {
 func init() {
 	rootCmd.AddCommand(plantCmd)
 
-	plantCmd.Flags().StringVarP(&repoName, "garden", "g", "", "the garden to add the flower to")
+	plantCmd.Flags().StringP("garden", "g", "", "the garden to add the flower to")
 }

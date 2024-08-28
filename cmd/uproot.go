@@ -23,25 +23,29 @@ var uprootCmd = &cobra.Command{
 }
 
 func uprootFn(cmd *cobra.Command, args []string) error {
+	garden, err := cmd.Flags().GetString("garden")
+	if err != nil {
+		return err
+	}
 	repos, err := os.ReadDir(dotstashPath)
 	if err != nil {
 		return err
 	}
-	if repoName == "" {
-		repoName = viper.GetString("primary_config")
-		if repoName == "" {
+	if garden == "" {
+		garden = viper.GetString("primary_config")
+		if garden == "" {
 			return errors.New("no garden specified, and no primary garden")
 		}
 	}
 	var target os.DirEntry
 	for _, e := range repos {
-		if e.Name() == repoName {
+		if e.Name() == garden {
 			target = e
 			break
 		}
 	}
 	if target == nil {
-		return fmt.Errorf("%s is not in your current list of gardens!", repoName)
+		return fmt.Errorf("%s is not in your current list of gardens!", garden)
 	}
 	targetPath := filepath.Join(dotstashPath, target.Name())
 	metadata, err := manifest.ReadManifest(targetPath)
@@ -65,5 +69,5 @@ func uprootFn(cmd *cobra.Command, args []string) error {
 func init() {
 	rootCmd.AddCommand(uprootCmd)
 
-	uprootCmd.Flags().StringVarP(&repoName, "garden", "g", "", "the garden to remove the flower(s) from")
+	uprootCmd.Flags().StringP("garden", "g", "", "the garden to remove the flower(s) from")
 }

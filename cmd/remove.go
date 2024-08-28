@@ -11,10 +11,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	noRestore bool
-)
-
 var removeCmd = &cobra.Command{
 	Use:   "remove name",
 	Short: "remove the specified garden from the stored set of gardens, restoring the flowers therein to their proper locations if the selected garden was the primary garden",
@@ -64,5 +60,5 @@ func removeFn(cmd *cobra.Command, args []string) error {
 func init() {
 	rootCmd.AddCommand(removeCmd)
 
-	removeCmd.Flags().BoolVar(&noRestore, "no-restore", false, "do not restore configurations to their original locations, even if no other configuration is targeting that location")
+	removeCmd.Flags().Bool("no-restore", false, "do not restore configurations to their original locations, even if no other configuration is targeting that location")
 }

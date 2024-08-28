@@ -11,6 +11,7 @@ import (
 )
 
 var (
+	// HACK: this might be the only global i'm okay with keeping (thin ice)
 	dotstashPath string
 )
 
