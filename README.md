@@ -58,7 +58,84 @@ More, easier ways to install are coming in the future, especially as Dotstash ne
 
 ## Usage
 
+Dotstash's usage is made up of a relatively small list of commands:
 
+### Git
+
+The `git` command executes arbitrary git commands inside of the primary garden.
+The `garden` flag **must be immediately after `git` and before the git command itself**, and allows you to specify an alternate garden in which to execute the git command.
+In order to commit some changes to my configuration in a garden called `franklin` (idk man, a name is a name), I would use the following commands:
+
+```sh
+dotstash git --garden=franklin add -A
+dotstash git --garden=franklin commit
+```
+
+Note that `git` is compatible with interactive git commands, so it will have no problem using my default editor to generate a commit message.
+
+### Make (Sow)
+
+The `make` command creates a new garden with the flowers specified by the arguments.
+The `name` flag allows you to specify a name for the garden. The name will default to `dotstash`.
+The `author` flag allows you to specify an author for the garden. The author will default to your username.
+For example, if I wanted to create a garden called `nv` which contained my neovim configuration, I would do so with the following command:
+
+```sh
+dotstash make ~/.config/nvim --name=nv
+```
+
+### Plant
+
+The `plant` command adds a flower to the primary garden.
+The `garden` flag allows you to specify an alternate garden in which to plant the flower.
+For example, if I wanted to add my `.zshrc` to the `nv` garden we created in the previous example, I would use the following command to do so:
+
+```sh
+dotstash plant ~/.zshrc --garden=nv
+```
+
+Note that if `nv` was my primary garden I would not need to specify it with the `garden` flag.
+
+### List
+
+The `list` command prints a list of your current gardens and all of the flowers listed therein.
+
+### Uproot (Deplant)
+
+The `uproot` command removes a flower from the primary garden.
+The `garden` flag allows you to specify an alternate garden from which to remove the flower.
+For example, if I wanted to remove my `.zshrc` from the `nv` garden, I would execute the following command:
+
+```sh
+dotstash uproot .zshrc --garden=nv
+```
+
+### Select
+
+The `select` command selects a garden to use as a source for your system's configuration style.
+The `clobber` flag will write over non-flower configuration files contained by the newly-selected garden.
+The `unlink` flag will preserve flowers contained by the newly-selected garden, _instead of_ unlinking them.
+In order to set the `nv` garden from the previous examples as primary, I would use the following command:
+
+```sh
+dotstash select nv
+```
+
+### Remove
+
+The `remove` command removes a garden from your list of gardens.
+The `no-restore` flag causes the configuration files to be deleted permanently.
+In order to remove the `nv` garden from the previous examples, I would use the following command:
+
+```sh
+dotstash remove nv
+```
+
+### Torch
+
+Do not use the `torch` command.
+It is a destructive tool created for my personal convenience while testing.
+You have been warned.
 
 ## Contributing
 
