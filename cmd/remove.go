@@ -9,6 +9,7 @@ import (
 	"github.com/jkellogg01/dotstash/files"
 	"github.com/jkellogg01/dotstash/manifest"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var removeCmd = &cobra.Command{
@@ -24,10 +25,19 @@ func removeFn(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	targetPath := path.Join(figRoot, args[0])
-	// TODO: when storing and swapping between multiple configs is supported,
-	// this should check which config is set as 'primary' and/or if it is being
-	// referenced for any config targets. for now we will just assume the named
-	// directory is primary
+	norestore, err := cmd.Flags().GetBool("no-restore")
+	if err != nil {
+		return err
+	}
+	primary := viper.GetString("primary_config")
+	if norestore || primary != args[0] {
+		return os.RemoveAll(targetPath)
+	}
+	viper.Set("primary_config", "")
+	err = viper.WriteConfig()
+	if err != nil {
+		log.Warn("failed to rewrite config", "error", err)
+	}
 	meta, err := manifest.ReadManifest(targetPath)
 	if err != nil {
 		return err
@@ -44,8 +54,8 @@ func removeFn(cmd *cobra.Command, args []string) error {
 		if !didConfirm {
 			return nil
 		}
+		log.Debug("confirmed, starting deletion")
 	}
-	log.Debug("confirmed, starting deletion")
 	for _, t := range targets {
 		log.Infof("substituting symlink at %s for %s", t.Dst, t.Src)
 		err := files.Substitute(t.Src, t.Dst)
