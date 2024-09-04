@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/jkellogg01/dotstash/files"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 var torchCmd = &cobra.Command{
@@ -39,6 +40,11 @@ var torchCmd = &cobra.Command{
 		}
 		if !confirm {
 			log.Info("torch cancelled.")
+		}
+		viper.Set("primary_config", "")
+		err = viper.WriteConfig()
+		if err != nil {
+			log.Warn("failed to write config", "error", err)
 		}
 		for _, file := range files {
 			name := path.Join(root, file.Name())

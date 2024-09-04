@@ -38,7 +38,13 @@ func getFn(cmd *cobra.Command, args []string) error {
 		return err
 	}
 	name := path.Base(src.Path)
-	// TODO: once there is an alias flag available, this should use that if it's non-blank
+	alias, err := cmd.Flags().GetString("alias")
+	if err != nil {
+		return err
+	}
+	if alias != "" {
+		name = alias
+	}
 	target := filepath.Join(dotstashPath, name)
 	err = git.Download(src.String(), branch, target)
 	if err != nil {
@@ -73,4 +79,5 @@ func init() {
 	rootCmd.AddCommand(getCmd)
 
 	getCmd.Flags().StringP("branch", "b", "", "specify a branch to download from")
+	getCmd.Flags().StringP("alias", "a", "", "specify an alias for the created garden")
 }
