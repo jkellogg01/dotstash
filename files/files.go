@@ -91,20 +91,25 @@ func SubstituteForSymlink(src, dst string) error {
 }
 
 func Link(src, dst string, clobber bool) error {
-	if dfi, err := os.Stat(dst); !errors.Is(err, fs.ErrNotExist) {
-		// here the file DEFINITELY EXISTS
-		if err != nil {
-			return err
-		} else if !clobber && (dfi.IsDir() || dfi.Mode().IsRegular()) {
-			return ErrNoClobber{dst}
-		}
+	dfi, err := os.Stat(dst)
+	if errors.Is(err, fs.ErrNotExist) {
+		log.Debug("destination file does not exist, nothing to do")
+	} else if err != nil {
+		return err
+	} else if !clobber && (dfi.Mode().IsDir() || dfi.Mode().IsRegular()) {
+		// TODO: clobber check
+		return ErrNoClobber{dst}
 	}
-	err := os.Remove(dst)
-	// NOTE: os.Remove never returns fs.ErrNotExist
-	if err != nil {
+
+	// TODO: possibly integrate with clobber checking to take an alternate action in that case that a clobber conflict occurs
+	if err := os.RemoveAll(dst); err != nil {
 		return err
 	}
-	return os.Symlink(src, dst)
+	if err := os.Symlink(src, dst); err != nil {
+		return err
+	}
+	log.Debug("link successful!", "source", src, "destination", dst)
+	return nil
 }
 
 func Unlink(dst string) error {
