@@ -24,7 +24,6 @@ var gitCmd = &cobra.Command{
 }
 
 func gitFn(cmd *cobra.Command, args []string) error {
-	log.Printf("%v", args)
 	// HACK: this is horrible; there must be a better way
 	var targetGarden string
 	switch {
