@@ -70,7 +70,18 @@ func getFn(cmd *cobra.Command, args []string) error {
 		log.Info("Job's done!")
 		return nil
 	}
-	meta.Link(false)
+	c = huh.NewConfirm().Title("Would you like to 'clobber' existing files?").Description("DO NOT DO THIS WITHOUT BACKUPS MADE!")
+	err = c.Run()
+	if err != nil {
+		log.Error("failed to run confirm prompt, exiting", "error", err)
+		return nil
+	}
+	clobber, ok := c.GetValue().(bool)
+	if !ok {
+		panic("confirm field did not return a bool value")
+	}
+	err = meta.Link(clobber)
+	log.Error(err)
 	log.Infof("Successfully set %s as your primary configuration!", target)
 	return nil
 }
