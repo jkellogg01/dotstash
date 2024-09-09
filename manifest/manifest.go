@@ -28,6 +28,9 @@ const (
 )
 
 type ConfigMetadata struct {
+	// NOTE: name should not be stored in the json data, but set every time
+	// the manifest is queried so that the information stays up to date
+	Name    string
 	Author  string         `json:"author"`
 	URL     string         `json:"url"`
 	Branch  string         `json:"branch"`
@@ -77,6 +80,7 @@ func ReadManifest(path string) (*ConfigMetadata, error) {
 	if err != nil {
 		return nil, err
 	}
+	result.Name = filepath.Base(path)
 	if err := srcFile.Close(); err != nil {
 		log.Errorf("failed to close manifest file after reading: %s", err)
 	}
@@ -115,7 +119,7 @@ func (d *ConfigMetadata) RemoveTarget(base string) {
 func (d ConfigMetadata) ExpandTargets() []ConfigTarget {
 	result := make([]ConfigTarget, 0, len(d.Targets))
 	for _, t := range d.Targets {
-		result = append(result, t.expand())
+		result = append(result, t.expand(d.Name))
 	}
 	return result
 }
@@ -127,20 +131,22 @@ func (d ConfigMetadata) ExpandTargets() []ConfigTarget {
 // dst = "#hom/.config/nvim"
 func (d *ConfigMetadata) AppendTarget(src, dst string) {
 	newTarget := ConfigTarget{
-		Src: compressPath(src),
-		Dst: compressPath(dst),
+		Src: compressPath(src, d.Name),
+		Dst: compressPath(dst, d.Name),
 	}
 	log.Debug("appending target", "target", newTarget.String())
 	d.Targets = append(d.Targets, newTarget)
 }
 
 // NOTE: unlike expansion, compression must happen in order from deepest to shallowest path.
-func compressPath(p string) string {
+func compressPath(p, name string) string {
 	var (
 		post string
 		cut  bool
 	)
-	post, cut = strings.CutPrefix(p, dotstashPath)
+	post, cut = strings.CutPrefix(p,
+		filepath.Join(dotstashPath, name),
+	)
 	if cut {
 		return filepath.Join(dotstashPathAbbr, post)
 	}
@@ -155,21 +161,21 @@ func compressPath(p string) string {
 	return p
 }
 
-func (t ConfigTarget) expand() ConfigTarget {
+func (t ConfigTarget) expand(name string) ConfigTarget {
 	return ConfigTarget{
-		Src: expandPath(t.Src),
-		Dst: expandPath(t.Dst),
+		Src: expandPath(t.Src, name),
+		Dst: expandPath(t.Dst, name),
 	}
 }
 
-func expandPath(p string) string {
+func expandPath(p, name string) string {
 	var (
 		post string
 		cut  bool
 	)
 	post, cut = strings.CutPrefix(p, dotstashPathAbbr)
 	if cut {
-		return filepath.Join(dotstashPath, post)
+		return filepath.Join(dotstashPath, name, post)
 	}
 	post, cut = strings.CutPrefix(p, configPathAbbr)
 	if cut {
