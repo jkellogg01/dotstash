@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/lipgloss/table"
 	"github.com/charmbracelet/log"
+	"github.com/jkellogg01/dotstash/color"
 	"github.com/jkellogg01/dotstash/manifest"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -22,12 +23,6 @@ var listCmd = &cobra.Command{
 }
 
 func listFn(cmd *cobra.Command, args []string) error {
-	var (
-		// NOTE: these colors are 100% jacked from charm's default color scheme,
-		// might want to set up a color scheme based on terminal colors instead?
-		indigo  = lipgloss.AdaptiveColor{Light: "#5A56E0", Dark: "#7571F9"}
-		fuchsia = lipgloss.Color("#F780E2")
-	)
 	entries, err := os.ReadDir(dotstashPath)
 	if err != nil {
 		return err
@@ -48,7 +43,7 @@ func listFn(cmd *cobra.Command, args []string) error {
 	}
 	t := table.New().
 		Border(lipgloss.NormalBorder()).
-		BorderStyle(lipgloss.NewStyle().Foreground(indigo)).
+		BorderStyle(lipgloss.NewStyle()).
 		BorderColumn(false).
 		// BorderHeader(false).
 		Headers("Primary", "Name", "Author", "Flowers")
@@ -74,10 +69,10 @@ func listFn(cmd *cobra.Command, args []string) error {
 	t = t.StyleFunc(func(row, col int) lipgloss.Style {
 		style := lipgloss.NewStyle().Padding(0, 1)
 		if row == 0 {
-			style = style.Bold(true).Foreground(indigo)
+			style = style.Bold(true)
 		}
 		if primaryRow != 0 && row == primaryRow {
-			style = style.Italic(true).Foreground(fuchsia)
+			style = style.Italic(true).Foreground(color.Purple)
 		}
 		return style
 	})
