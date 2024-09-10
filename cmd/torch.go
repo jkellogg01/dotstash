@@ -34,6 +34,7 @@ var torchCmd = &cobra.Command{
 			Affirmative("Delete my data").
 			Negative("That seems bad").
 			Value(&confirm).
+			WithTheme(huh.ThemeBase()).
 			Run()
 		if err != nil {
 			return err

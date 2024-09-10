@@ -56,7 +56,7 @@ func getFn(cmd *cobra.Command, args []string) error {
 		log.Warn("the downloaded repository does not contain a manifest.json; it will need one before it can be used with dotstash!")
 		return nil
 	}
-	c := huh.NewConfirm().Title("Would you like to set this garden as your primary source for configuration files?")
+	c := huh.NewConfirm().Title("Would you like to set this garden as your primary source for configuration files?").WithTheme(huh.ThemeBase())
 	err = c.Run()
 	if err != nil {
 		log.Error("failed to run confirm prompt, exiting", "error", err)
@@ -70,7 +70,7 @@ func getFn(cmd *cobra.Command, args []string) error {
 		log.Info("Job's done!")
 		return nil
 	}
-	c = huh.NewConfirm().Title("Would you like to 'clobber' existing files?").Description("DO NOT DO THIS WITHOUT BACKUPS MADE!")
+	c = huh.NewConfirm().Title("Would you like to 'clobber' existing files?").Description("DO NOT DO THIS WITHOUT BACKUPS MADE!").WithTheme(huh.ThemeBase())
 	err = c.Run()
 	if err != nil {
 		log.Error("failed to run confirm prompt, exiting", "error", err)

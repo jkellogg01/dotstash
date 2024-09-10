@@ -1,6 +1,8 @@
 package color
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"github.com/charmbracelet/lipgloss"
+)
 
 const (
 	Black lipgloss.ANSIColor = iota

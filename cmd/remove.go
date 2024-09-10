@@ -45,11 +45,14 @@ func removeFn(cmd *cobra.Command, args []string) error {
 	targets := meta.ExpandTargets()
 	if os.Getenv("MODE") == "dev" {
 		log.Debug("got yer targets here", "targets", targets)
-		var didConfirm bool
-		confirm := huh.NewConfirm().Value(&didConfirm).Title("dev mode: confirm delete")
+		confirm := huh.NewConfirm().Title("dev mode: confirm delete").WithTheme(huh.ThemeBase())
 		err = confirm.Run()
 		if err != nil {
 			return err
+		}
+		didConfirm, ok := confirm.GetValue().(bool)
+		if !ok {
+			panic("failed to get confirm value!")
 		}
 		if !didConfirm {
 			return nil
