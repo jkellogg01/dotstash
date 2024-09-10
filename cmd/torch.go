@@ -7,6 +7,7 @@ import (
 
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/log"
+	"github.com/jkellogg01/dotstash/color"
 	"github.com/jkellogg01/dotstash/files"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -32,7 +33,7 @@ var torchCmd = &cobra.Command{
 			Description(fmt.Sprintf("This is not recommended for users under any circumstances.\nAre you sure you want to delete your dotstash directory and all %d entries it contains?", fileCount)).
 			Affirmative("Delete my data").
 			Negative("That seems bad").
-			WithTheme(huh.ThemeBase())
+			WithTheme(color.ThemeBase())
 		err = c.Run()
 		if err != nil {
 			return err

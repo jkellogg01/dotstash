@@ -6,6 +6,7 @@ import (
 
 	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/log"
+	"github.com/jkellogg01/dotstash/color"
 	"github.com/jkellogg01/dotstash/files"
 	"github.com/jkellogg01/dotstash/manifest"
 	"github.com/spf13/cobra"
@@ -45,7 +46,7 @@ func removeFn(cmd *cobra.Command, args []string) error {
 	targets := meta.ExpandTargets()
 	if os.Getenv("MODE") == "dev" {
 		log.Debug("got yer targets here", "targets", targets)
-		confirm := huh.NewConfirm().Title("dev mode: confirm delete").WithTheme(huh.ThemeBase())
+		confirm := huh.NewConfirm().Title("dev mode: confirm delete").WithTheme(color.ThemeBase())
 		err = confirm.Run()
 		if err != nil {
 			return err
