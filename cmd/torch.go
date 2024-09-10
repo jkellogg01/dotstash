@@ -27,20 +27,23 @@ var torchCmd = &cobra.Command{
 			return err
 		}
 		fileCount := len(files)
-		var confirm bool
-		err = huh.NewConfirm().
+		c := huh.NewConfirm().
 			Title("WARNING: you are using a DESTRUCTIVE developer tool.").
 			Description(fmt.Sprintf("This is not recommended for users under any circumstances.\nAre you sure you want to delete your dotstash directory and all %d entries it contains?", fileCount)).
 			Affirmative("Delete my data").
 			Negative("That seems bad").
-			Value(&confirm).
-			WithTheme(huh.ThemeBase()).
-			Run()
+			WithTheme(huh.ThemeBase())
+		err = c.Run()
 		if err != nil {
 			return err
 		}
+		confirm, ok := c.GetValue().(bool)
+		if !ok {
+			panic("failed to get confirm value, get me out of here man")
+		}
 		if !confirm {
 			log.Info("torch cancelled.")
+			return nil
 		}
 		viper.Set("primary_config", "")
 		err = viper.WriteConfig()
